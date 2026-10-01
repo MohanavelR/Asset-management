@@ -1,0 +1,22 @@
+extends ../layout/base
+
+block title 
+   title  Login 
+
+block content 
+  include includes/header
+  div.container 
+    div.row.justify-content-center.align-items-center.min-vh-100
+       div.col-md-5.col-12
+        div.rounded.p-5.shadow-lg
+          h2.mt-2.text-center OTP Verification
+          form(action="").login-form.mb-3
+          div.form-group
+           
+
+             input.form-control(type="text")
+          div.col-12.my-4
+              button.btn.btn-primary.w-100 verify
+          div.text-center
+              a(href="") Back 
+             

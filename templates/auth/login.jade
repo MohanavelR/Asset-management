@@ -1,0 +1,40 @@
+extends ../layout/base
+
+block title 
+   title  Login 
+
+block content 
+  include includes/header
+  div.container 
+    div.row.justify-content-center.align-items-center.min-vh-100
+       div.col-md-5.col-12
+         div.rounded.px-5.pb-5.shadow-lg
+          div.d-flex.col-12.justify-content-center 
+            img(src="images/logo.jpeg", alt="",width="100px",height="100px").rounded-circle
+          h2.mt-2.text-center Login
+          form(action="").login-form.mb-3
+            div.mb-2.form-group
+              label(for="").form-label Email/Username
+              input(type="text").form-control
+            div.mb-2.position-relative.form-group(id="login-password")
+              label(for="").form-label Password 
+              //- span.text-danger.ms-1 * 
+              input(type="password",id="login-password-fleid").form-control.password-field.pe-4
+              span.position-absolute.password-icon(id="login-password-icon")
+                 i.fa-solid.fa-eye-slash
+
+            div.text-end.my-3
+              a(href="") Forgot Password?   
+            div.col-12
+              button.btn.btn-primary.w-100 Login 
+
+  block scripts
+    script.
+         const passwordInputField=document.getElementById("login-password-fleid");
+         const passwordIcon=document.getElementById("login-password-icon");
+         passwordIcon.addEventListener("click",()=>{
+             const isOpenedIcon=passwordInputField.type==="text";
+             passwordInputField.type=isOpenedIcon?"password":"text";
+             passwordIcon.innerHTML = isOpenedIcon ? '<i class="fa-solid fa-eye-slash"></i>' 
+             : '<i class="fa-solid fa-eye"></i>';
+         }) ;           
