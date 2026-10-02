@@ -1,7 +1,7 @@
 extends ../layout/base
 
 block title 
-   title  Login 
+   title  OTP Verification
 
 block content 
   include includes/header
@@ -10,13 +10,59 @@ block content
        div.col-md-5.col-12
         div.rounded.p-5.shadow-lg
           h2.mt-2.text-center OTP Verification
-          form(action="").login-form.mb-3
-          div.form-group
-           
+          form#otp-form.login-form.mb-3
+            div.form-group
+               input.form-control(type="text",name="otp",id="otp")
+               span.text-danger#otp-error.error-text  
+            div.col-12.my-4
+                button.btn.btn-primary.w-100#otp-submit-btn Submit   
+            div.text-center
+              a(href="/login") Back 
+block scripts
+     script.
+         $("#otp-form").on("submit",async(event)=>{
+          const otpSubmitBtn=$("#otp-submit-btn")
+           try{
+            otpSubmitBtn.html('<div class="spinner-border spinner-border-sm" role="status"><span class="visually-hidden"></span></div>')
+            otpSubmitBtn.prop("disabled", true);
+            event.preventDefault()
 
-             input.form-control(type="text")
-          div.col-12.my-4
-              button.btn.btn-primary.w-100 verify
-          div.text-center
-              a(href="") Back 
-             
+            const formData=new FormData(event.currentTarget)
+            let isValid=true
+            const otpError= $("#otp-error")
+            otpError.text("")
+            if(formData.get("otp")?.trim()===""){
+              otpError.text("This is Required")
+              isValid=false
+            }
+            if(!isValid){
+              setTimeout(()=>{
+              otpError.text("")
+              },3000)
+              return
+            }
+            const data=Object.fromEntries(formData)
+            const response = await fetch("/otpVerifyApi",{
+              method:"POST",
+              headers:{
+                "Content-Type":"application/json"
+              },
+              body:JSON.stringify({...data,loginId:sessionStorage.getItem("loginId")})
+
+            })
+            const res_data=await response.json()
+            console.log(res_data)
+            showToast(res_data.message)
+            if(res_data?.success){
+              window.location.href = "/set-password";
+            }
+           }
+           catch(error){
+             showToast(res_data.message)
+           }
+          finally{
+            otpSubmitBtn.html("submit")
+            otpSubmitBtn.prop("disabled", false);
+          }
+         }) 
+        

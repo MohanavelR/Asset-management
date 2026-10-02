@@ -1,0 +1,122 @@
+extends ./base
+
+block content
+  nav.navbar.bg-secondary.position-sticky.top-0.z-3
+    div.container-fluid
+      div.d-flex.align-items-center.justify-content-between.gap-2.w-100
+        div 
+          button.btn.btn-outline-light.d-md-none(type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebarMenu" aria-controls="sidebarMenu" aria-label="Toggle menu") ☰
+          a.navbar-brand.d-none.d-md-block.text-white.fs-2(href="/") #{appName}
+        div.dropdown
+        div.d-flex.gap-2.align-items-center.dropdown-toggle(
+            data-bs-toggle="dropdown"
+            aria-expanded="false"
+            role="button"
+        )
+            div.d-flex.flex-column
+                span.text-white #{user.userName}
+        ul.dropdown-menu.dropdown-menu-end
+            li
+                button.text-center.dropdown-item(type="button")#logout-btn logout
+            
+
+  div.container-fluid
+    div.row
+      aside#sidebarMenu.user-aside.position-fixed.offcanvas-md.offcanvas-start.col-8.col-sm-5.col-md-3.col-lg-2.bg-light.border-end.min-vh-md-100(tabindex="-1" aria-labelledby="sidebarLabel")
+        div.offcanvas-header.border-bottom
+          h5#sidebarLabel.offcanvas-title #{appName}
+          button.btn-close(type="button" data-bs-dismiss="offcanvas" data-bs-target="#sidebarMenu" aria-label="Close")
+        div.offcanvas-body.d-block.pt-4
+          ul.nav.flex-column.text-black.sidebar-alt
+            li.nav-item.menu-item
+              a.nav-link(href="/dashboard", class=activePage === "dashboard" ? "active" : "")
+                i.fas.fa-chart-line.me-2
+                | Dashboard
+        
+            //- ===== MASTERS =====
+            li.nav-item
+              a.menu-toggle(data-bs-toggle="collapse", href="#mastersMenu", role="button", aria-expanded="true", aria-controls="mastersMenu")
+                span Masters
+                i.fas.fa-chevron-down.chevron
+        
+            li
+              div#mastersMenu.collapse.show
+                ul.nav.flex-column
+                  li.nav-item.menu-item
+                    a.nav-link(href="/employees", class=activePage === "employees" ? "active" : "")
+                      i.fas.fa-users.me-2
+                      | Employee Master
+                  li.nav-item.menu-item
+                    a.nav-link(href="/categories", class=activePage === "categories" ? "active" : "")
+                      i.fas.fa-list.me-2
+                      | Asset Category
+                  li.nav-item.menu-item
+                    a.nav-link(href="/assets", class=activePage === "assets" ? "active" : "")
+                      i.fas.fa-box.me-2
+                      | Asset Master
+        
+            li
+              hr.my-2
+        
+            //- ===== OPERATIONS =====
+            li.nav-item
+              a.menu-toggle(data-bs-toggle="collapse", href="#operationsMenu", role="button", aria-expanded="true", aria-controls="operationsMenu")
+                span Operations
+                i.fas.fa-chevron-down.chevron
+        
+            li
+              div#operationsMenu.collapse.show
+                ul.nav.flex-column
+                  li.nav-item.menu-item
+                    a.nav-link(href="/issue/stock", class=activePage === "stock" ? "active" : "")
+                      i.fas.fa-warehouse.me-2
+                      | Stock View
+                  li.nav-item.menu-item
+                    a.nav-link(href="/issue", class=activePage === "issue" ? "active" : "")
+                      i.fas.fa-arrow-right.me-2
+                      | Issue Asset
+                  li.nav-item.menu-item
+                    a.nav-link(href="/return/list", class=activePage === "return" ? "active" : "")
+                      i.fas.fa-arrow-left.me-2
+                      | Return Asset
+                  li.nav-item.menu-item
+                    a.nav-link(href="/scrap/list", class=activePage === "scrap" ? "active" : "")
+                      i.fas.fa-trash.me-2
+                      | Scrap Asset
+        
+            li
+              hr.my-2
+        
+            li.nav-item.menu-item
+              a.nav-link(href="/history", class=activePage === "history" ? "active" : "")
+                i.fas.fa-history.me-2
+                | Asset History
+      
+      
+      main#main-content-user.pb-5
+        block userContent
+block scripts 
+    script.
+      $("#logout-btn").on("click",async()=>{
+         try{
+         const isOk=confirm("Are sure Logout?")
+         if(isOk){
+           const res= await fetch("/logoutApi",{
+            method:"POST",
+            headers:{
+               "Context-Type":"application/json"
+            }
+           })
+           const res_data=await res.json()
+           console.log(res_data)
+           showToast(res_data.message)
+           if(res_data.success){
+            window.location.replace("/")
+           }
+         }
+         }
+         catch(error){
+            showToast(error.message)
+         }
+      })         
+       

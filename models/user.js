@@ -56,8 +56,6 @@ const User=sequelize.define("User",{
     defaultScope:{
       attributes:{
         exclude:[
-          "password",
-          "forgotOtp"
         ]
       }
     },

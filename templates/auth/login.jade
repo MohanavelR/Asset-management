@@ -1,7 +1,7 @@
 extends ../layout/base
 
 block title 
-   title  Login 
+   title  Login | #{appName} 
 
 block content 
   include includes/header
@@ -12,24 +12,82 @@ block content
           div.d-flex.col-12.justify-content-center 
             img(src="images/logo.jpeg", alt="",width="100px",height="100px").rounded-circle
           h2.mt-2.text-center Login
-          form(action="").login-form.mb-3
+          form(id="login-form").login-form.mb-3
             div.mb-2.form-group
-              label(for="").form-label Email/Username
-              input(type="text").form-control
+              label(for="loginId").form-label Email/Username
+              input(type="text",name="loginId",id="loginId").form-control
+              span.text-danger#loginId-error.error-text  
             div.mb-2.position-relative.form-group(id="login-password")
-              label(for="").form-label Password 
+              label(for="login-password-fleid").form-label Password 
               //- span.text-danger.ms-1 * 
-              input(type="password",id="login-password-fleid").form-control.password-field.pe-4
+              input(type="password",id="login-password-fleid",name="password").form-control.password-field.pe-4
               span.position-absolute.password-icon(id="login-password-icon")
                  i.fa-solid.fa-eye-slash
-
+               span.text-danger#password-error.error-text  
             div.text-end.my-3
-              a(href="") Forgot Password?   
+              a(href="/forgot-password") Forgot Password?   
             div.col-12
-              button.btn.btn-primary.w-100 Login 
+              button.btn.btn-primary.w-100#login-submin-btn Login 
 
-  block scripts
+block scripts
+    
     script.
+         $("#login-form").on("submit",async(event)=>{
+             event.preventDefault()
+             const loginSubmitBtn=$("#login-submin-btn")
+             try{
+                loginSubmitBtn.html('<div class="spinner-border spinner-border-sm" role="status"><span class="visually-hidden"></span></div>')
+                loginSubmitBtn.prop("disabled", true);
+                const formData=new FormData(event.currentTarget)
+                let isValid=true
+                const loginIdError= $("#loginId-error")
+                const passwordError= $("#password-error")
+
+                loginIdError.text("")
+                passwordError.text("")
+    
+                if(formData.get("loginId")?.trim()===""){
+                  loginIdError.text("This is Required")
+                  isValid=false
+                }
+                if(formData.get("password")?.trim()===""){
+                  passwordError.text("This is Required")
+                  isValid=false
+                }
+    
+                if(!isValid){
+                  setTimeout(()=>{
+                  loginIdError.text("")
+                  passwordError.text("")
+                  },3000)
+                  return
+                }
+
+                const data=Object.fromEntries(formData)
+                const response = await fetch("/loginApi",{
+                  method:"POST",
+                  headers:{
+                    "Content-Type":"application/json"
+                  },
+                  body:JSON.stringify(data)
+                })
+                const res_data=await response.json()
+                showToast(res_data.message)
+                if(res_data?.success){
+                  //- window.location.href="/"
+                   window.location.replace("/");
+                  //- localStorage.setItem("token",res_data.token)
+                }
+             }  
+             catch(error){
+               showToast(error.message)
+             }
+             finally{
+                 loginSubmitBtn.html("Login")
+                 loginSubmitBtn.prop("disabled", false);
+             }
+              }) 
+
          const passwordInputField=document.getElementById("login-password-fleid");
          const passwordIcon=document.getElementById("login-password-icon");
          passwordIcon.addEventListener("click",()=>{
@@ -37,4 +95,7 @@ block content
              passwordInputField.type=isOpenedIcon?"password":"text";
              passwordIcon.innerHTML = isOpenedIcon ? '<i class="fa-solid fa-eye-slash"></i>' 
              : '<i class="fa-solid fa-eye"></i>';
-         }) ;           
+         }) ;
+         
+
+

@@ -13,3 +13,68 @@
   font-size: 14px;
   cursor: pointer;
 }
+.login-form .form-group .error-text{
+  font-size: 14px;
+  transition-duration: 5s;
+} 
+#sidebarMenu {
+    height: 100vh;
+    overflow: auto;
+  }
+.offcanvas-body .nav .menu-item{
+  border-radius: 5px;
+  color: black;
+}  
+.offcanvas-body .nav .menu-item:hover{
+  background-color:rgb(228, 241, 237);
+  border-radius: 5px;
+}  
+.offcanvas-body .nav .menu-item a{
+    color: black;
+    display: flex;
+}
+.offcanvas-body .nav .menu-item a.active{
+  color: rgb(79, 32, 154);
+  border-radius: 5px;
+  background-color: rgb(199, 228, 228);
+}
+.offcanvas-body .nav .menu-item a i{
+    margin-top: 3px;
+}
+/* Clickable section heading */
+.sidebar-alt .menu-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 1.25rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #6b7280;
+  text-decoration: none;
+  cursor: pointer;
+}
+.sidebar-alt .menu-toggle:hover {
+  color: #4338ca;
+}
+
+/* Arrow rotates when closed */
+.sidebar-alt .chevron {
+  font-size: 0.65rem;
+  transition: transform 0.25s ease;
+}
+.sidebar-alt .menu-toggle.collapsed .chevron {
+  transform: rotate(-90deg);
+}
+
+
+
+#main-content-user  {
+padding-left:250px ;
+}
+@media (max-width: 768px) {
+   #main-content-user  {
+ padding: 1.5rem !important;
+} 
+} 

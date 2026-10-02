@@ -1,0 +1,75 @@
+extends ../../layout/userLayout
+
+block userContent
+
+  - const e = employee || {}
+
+  .d-flex.align-items-center.mb-4.mt-4
+    a.text-dark.me-3.fs-3(href='/employees', title='Back')
+      i.fas.fa-arrow-left
+    h3.mb-0= employee ? 'Update Employee' : 'Add Employee'
+  form#employeeForm(data-id=e._id)
+    .row.g-3
+      .col-lg-4.col-md-6
+        label.form-label Employee ID
+        input.form-control(name='employeeId', value=e.employeeId, readonly=!!employee, required)
+
+      .col-lg-4.col-md-6
+        label.form-label Name
+        input.form-control(name='name', value=e.name, required)
+
+      .col-lg-4.col-md-6
+        label.form-label Email
+        input.form-control(type='email', name='email', value=e.email, required)
+
+      .col-lg-4.col-md-6
+        label.form-label Phone
+        input.form-control(type='tel', name='phone', value=e.phone, required)
+
+      .col-lg-4.col-md-6
+        label.form-label Department
+        input.form-control(name='department', value=e.department, required)
+
+      .col-lg-4.col-md-6
+        label.form-label Designation
+        input.form-control(name='designation', value=e.designation, required)
+
+      .col-lg-4.col-md-6
+        label.form-label Branch
+        input.form-control(name='branch', value=e.branch, required)
+
+      .col-lg-4.col-md-6
+        label.form-label Status
+        select.form-select(name='status')
+          option(value='Active', selected=e.status === 'Active') Active
+          option(value='Inactive', selected=e.status === 'Inactive') Inactive
+
+    .text-end.mt-4
+      a.btn.btn-light.border.me-2(href='/employees') Cancel
+      button.btn.btn-primary(type='submit')= employee ? 'Update' : 'Save'
+
+  script.
+    const form = document.getElementById('employeeForm');
+
+    form.addEventListener('submit', async (ev) => {
+      ev.preventDefault();
+
+      const id = form.dataset.id;
+
+      const res = await fetch(
+        id ? '/api/employees/' + id : '/api/employees',
+        {
+          method: id ? 'PUT' : 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(Object.fromEntries(new FormData(form)))
+        }
+      );
+
+      const data = await res.json();
+
+      if (res.ok) {
+        window.location.href = '/employees';
+      } else {
+        alert(data.message);
+      }
+    });

@@ -1,0 +1,26 @@
+extends layout/base
+
+block title
+    title Loading...
+
+block content
+
+    div.d-flex.flex-column.justify-content-center.align-items-center.vh-100
+        div.spinner-border(role="status")
+            span.visually-hidden Loading...
+
+        p.mt-3 Loading...
+
+    script.
+        const isAuthenticated = !{JSON.stringify(isAuthenticated)};
+
+        setTimeout(() => {
+
+            if (isAuthenticated) {
+                //- window.location.href = "/dashboard";
+                 window.location.replace("/dashboard");
+            } else {
+              window.location.replace("/login");
+            }
+
+        }, 800);
