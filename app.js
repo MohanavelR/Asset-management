@@ -9,25 +9,30 @@ const ROOT_PATH=require("./utils/projectPath")
 
 // create app 
 function create_app(){
-  const APP= express()
-  //set template engine   
-  APP.set("view engine","jade")
-  APP.use(express.json())
-  APP.use(express.urlencoded({extended:true}))
-  //set templates files   
-  APP.set("views",path.join(ROOT_PATH,"templates"))
-  // set css file access  
-  APP.use(express.static(path.join(ROOT_PATH,"public")))
-//   APP.use((req, res, next) => {
-//     res.locals.appName = "Asset Manage";
-//     res.locals.user = req.user || null;
-
-//     next();
-// });
-  APP.get("/", (req, res) => {
-    res.render("auth/setPassword");
-});
-  return APP
+  try {
+    
+    const APP= express()
+    //set template engine   
+    APP.set("view engine","jade")
+    APP.use(express.json())
+    APP.use(express.urlencoded({extended:true}))
+    //set templates files   
+    APP.set("views",path.join(ROOT_PATH,"templates"))
+    // set css file access  
+    APP.use(express.static(path.join(ROOT_PATH,"public")))
+  //   APP.use((req, res, next) => {
+  //     res.locals.appName = "Asset Manage";
+  //     res.locals.user = req.user || null;
+  
+  //     next();
+  // });
+    APP.get("/", (req, res) => {
+      res.render("auth/setPassword");
+  });
+    return APP
+  } catch (error) {
+     logger.error(`${error.message}`);
+  }
 }
 // ---------------
 
