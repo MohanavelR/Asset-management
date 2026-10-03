@@ -48,9 +48,6 @@ const Employee = sequelize.define(
           allowNull: false,
           validate:{
             notEmpty:true,
-          validate:{
-            notEmpty:true
-          }
           }
         },
         branch: {

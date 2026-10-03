@@ -1,0 +1,92 @@
+extends ../../layout/userLayout
+
+block title
+    title Categories | Asset Management
+
+block userContent
+    div.pt-3
+        div.d-flex.justify-content-between
+            h2 Categories
+            div
+                button.btn.btn-primary#addCategoryBtn(type='button' onclick="addCategory()" )
+                    i.fa-solid.fa-plus
+                    |  Categories
+        hr
+        .row.mb-3
+            .col-md-4
+                input#searchInput.form-control(type='text', placeholder='Search category...')
+        .card
+            .card-body
+                .table-responsive
+                    table#categoryTable.table.table-striped.table-hover.w-100
+                        thead
+                            tr
+                                th #
+                                th Name
+                                th Description
+                                th Created
+                                th.text-end Action 
+                        tbody#categoryTableBody
+                              //-Loading    
+                           tr#categoryLoading
+                              td.py-4.text-center(colspan=9)
+                                 .spinner-border.text-primary(role="status",aria-hidden="true")
+                           tr#categoryEmpty.d-none
+                              td.text-center.py-4(colspan="9")
+                                  i.fa-solid.fa-users-slash.fa-2x.text-muted
+                                  p.mt-2.mb-0.text-muted
+                                      | No categories found.
+
+                                 //- Error
+                           tr#categoryError.d-none
+                              td.text-center.py-4(colspan="9")
+                                 i.fa-solid.fa-triangle-exclamation.fa-2x.text-danger
+                                 p.mt-2.mb-0.text-danger
+                                           | Unable to load categories.
+
+ 
+        //- Category Form
+        #categoryModal.modal.fade(tabindex='-1', aria-hidden='true')
+            .modal-dialog.modal-dialog-centered
+                .modal-content
+                    form#categoryForm(method='POST', action='/categories/create')
+                        .modal-header
+                            h5.modal-title#categoryModalTitle Add Category
+                            button.btn-close(type='button', data-bs-dismiss='modal')
+                        .modal-body
+                            .mb-3
+                                label.form-label(for='categoryName') Category Name
+                                    span.text-danger  *
+                                input#categoryName.form-control(
+                                    type='text',
+                                    name='name',
+                                    placeholder='e.g. Laptop, Mobile Phone, Drill Machine',
+                                    minlength='2',
+                                    maxlength='100',
+                                    required
+                                )
+                            .mb-3
+                                label.form-label(for='categoryDesc') Description
+                                textarea#categoryDesc.form-control(
+                                    name='desc',
+                                    rows='3',
+                                    placeholder='Optional'
+                                )
+                        .modal-footer
+                            button.btn.btn-light(type='button', data-bs-dismiss='modal') Cancel
+                            button.btn.btn-primary#categorySubmitBtn(type='submit') Save
+block scripts
+    script.
+        function addCategory() {
+            $('#categoryForm')[0].reset();
+            $('#categoryModalTitle').text('Add Category');
+            bootstrap.Modal.getOrCreateInstance($('#categoryModal')[0]).show();
+        }
+    
+        function editCategory(btn) {
+            var category = $(btn).data('category');
+            $('#categoryName').val(category.name);
+            $('#categoryDesc').val(category.desc || '');
+            $('#categoryModalTitle').text('Edit Category');
+            bootstrap.Modal.getOrCreateInstance($('#categoryModal')[0]).show();
+        }

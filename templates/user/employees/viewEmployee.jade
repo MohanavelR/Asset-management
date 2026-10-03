@@ -1,0 +1,78 @@
+extends ../../layout/userLayout
+
+block title
+    title Employee | Asset Management
+
+block userContent
+    div.pt-3
+        div.d-flex.justify-content-between
+            .d-flex.align-items-center
+                a.text-dark.me-3.fs-3(href='/employees', title='Back')
+                    i.fas.fa-arrow-left
+                h2 Employee Details
+            
+        hr
+
+        .row
+            //- Left: profile card
+            .col-lg-4.mb-4
+                .card.shadow-sm.border-0.text-center
+                    .card-body.py-4
+                        .rounded-circle.bg-primary.text-white.d-inline-flex.align-items-center.justify-content-center.mb-3(style='width:90px;height:90px;font-size:36px')
+                            = employee.name.charAt(0).toUpperCase()
+                        h4.mb-1= employee.name
+                        p.text-muted.mb-2= employee.designation
+                        if employee.status === 'Active'
+                            span.badge.bg-success.px-3.py-2 Active
+                        else
+                            span.badge.bg-secondary.px-3.py-2 Inactive
+                        div.mt-3
+                            a.btn.btn-outline-primary.btn-sm(href=`/employees/edit/${employee.id}`)
+                                i.fas.fa-edit.me-1
+                                | Edit Profile
+                    ul.list-group.list-group-flush.text-start
+                        li.list-group-item
+                            i.fas.fa-id-badge.text-primary.me-2
+                            = employee.employeeId
+                        li.list-group-item
+                            i.fas.fa-envelope.text-primary.me-2
+                            a.text-decoration-none(href=`mailto:${employee.email}`)= employee.email
+                        li.list-group-item
+                            i.fas.fa-phone.text-primary.me-2
+                            a.text-decoration-none(href=`tel:${employee.phone}`)= employee.phone
+
+            //- Right: details
+            .col-lg-8
+                .card.shadow-sm.border-0.mb-4
+                    .card-header.bg-white.fw-bold
+                        i.fas.fa-briefcase.me-2.text-primary
+                        | Work Information
+                    .card-body
+                        table.table.table-borderless.mb-0
+                            tbody
+                                tr
+                                    th.text-muted(style='width:35%') Department
+                                    td= employee.department
+                                tr
+                                    th.text-muted Designation
+                                    td= employee.designation
+                                tr
+                                    th.text-muted Branch
+                                    td= employee.branch
+                                tr
+                                    th.text-muted Status
+                                    td= employee.status
+
+                .card.shadow-sm.border-0
+                    .card-header.bg-white.fw-bold
+                        i.fas.fa-clock.me-2.text-primary
+                        | Record Information
+                    .card-body
+                        table.table.table-borderless.mb-0
+                            tbody
+                                tr
+                                    th.text-muted(style='width:35%') Created On
+                                    td= new Date(employee.createdAt).toLocaleDateString('en-IN')
+                                tr
+                                    th.text-muted Last Updated
+                                    td= new Date(employee.updatedAt).toLocaleDateString('en-IN')

@@ -8,35 +8,36 @@ block userContent
     a.text-dark.me-3.fs-3(href='/employees', title='Back')
       i.fas.fa-arrow-left
     h3.mb-0= employee ? 'Update Employee' : 'Add Employee'
-  form#employeeForm(data-id=e._id)
+  hr
+  form#employeeForm(data-id=e.id).mt-3
     .row.g-3
       .col-lg-4.col-md-6
         label.form-label Employee ID
-        input.form-control(name='employeeId', value=e.employeeId, readonly=!!employee, required)
+        input.form-control(name='employeeId', value=e.employeeId, readonly=!!employee)
 
       .col-lg-4.col-md-6
         label.form-label Name
-        input.form-control(name='name', value=e.name, required)
+        input.form-control(name='name', value=e.name)
 
       .col-lg-4.col-md-6
         label.form-label Email
-        input.form-control(type='email', name='email', value=e.email, required)
+        input.form-control(type='email', name='email', value=e.email)
 
       .col-lg-4.col-md-6
         label.form-label Phone
-        input.form-control(type='tel', name='phone', value=e.phone, required)
+        input.form-control(type='tel', name='phone', value=e.phone)
 
       .col-lg-4.col-md-6
         label.form-label Department
-        input.form-control(name='department', value=e.department, required)
+        input.form-control(name='department', value=e.department)
 
       .col-lg-4.col-md-6
         label.form-label Designation
-        input.form-control(name='designation', value=e.designation, required)
+        input.form-control(name='designation', value=e.designation)
 
       .col-lg-4.col-md-6
         label.form-label Branch
-        input.form-control(name='branch', value=e.branch, required)
+        input.form-control(name='branch', value=e.branch)
 
       .col-lg-4.col-md-6
         label.form-label Status
@@ -46,30 +47,51 @@ block userContent
 
     .text-end.mt-4
       a.btn.btn-light.border.me-2(href='/employees') Cancel
-      button.btn.btn-primary(type='submit')= employee ? 'Update' : 'Save'
-
+      button.btn.btn-primary#employee-save-btn(type='submit') Save
+block scripts
   script.
-    const form = document.getElementById('employeeForm');
-
-    form.addEventListener('submit', async (ev) => {
-      ev.preventDefault();
-
-      const id = form.dataset.id;
-
-      const res = await fetch(
-        id ? '/api/employees/' + id : '/api/employees',
-        {
-          method: id ? 'PUT' : 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(Object.fromEntries(new FormData(form)))
-        }
-      );
-
-      const data = await res.json();
-
-      if (res.ok) {
-        window.location.href = '/employees';
-      } else {
-        alert(data.message);
-      }
-    });
+     const employeeForm=$("#employeeForm")
+    
+     employeeForm.on("submit",async(event)=>{
+       event.preventDefault()
+       const employeeSaveBtn=$("#employee-save-btn")
+       
+       try{
+         const formData = new FormData(event.currentTarget)
+         const data=Object.fromEntries(formData)
+         const id=employeeForm.data("id")
+         const apiUrl = id?`/updateEmployeeApi/${id}`:"/addEmployeeApi"
+         employeeSaveBtn.html('<div class="spinner-border spinner-border-sm" role="status"><span class="visually-hidden"></span></div>')
+         employeeSaveBtn.prop("disabled", true);
+         const response = await fetch(apiUrl,{
+          method:id?"PUT":"POST",
+          headers:{
+            "Content-Type":"application/json"
+          },
+          body :JSON.stringify(data)
+         }) 
+         const res_data=await response.json()
+         console.log(res_data)
+         if (!res_data.success) {
+            if (Array.isArray(res_data.errors) && res_data.errors.length) {
+              showToasts(res_data.errors.map(e => e.message));
+            } else {
+              showToast(res_data.message || "Something went wrong", "danger")
+            }
+            } else {
+              showToast(res_data.message || "Saved successfully", "success")
+              employeeForm[0].reset()         
+              setTimeout(()=>{
+                window.location.replace("/employees")
+              },1000)
+              employeeForm.removeData("id")    
+            }
+       }
+       catch(error){
+         showToast(error.message || "Something went wrong", "danger")
+       }
+       finally{
+         employeeSaveBtn.html('Save')
+         employeeSaveBtn.prop("disabled", false);
+       }
+     })

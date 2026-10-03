@@ -1,3 +1,7 @@
+const dayjs = require("dayjs");
+const customParseFormat = require("dayjs/plugin/customParseFormat");
+dayjs.extend(customParseFormat);
+
 function cleanString(s){
   return typeof s==="string"? s.trim():""
 }
@@ -47,8 +51,31 @@ function cleanArray(value) {
     .filter((item) => item !== null && item !== undefined && item !== "");
 }
 
+
+const DATE_FORMATS = {
+  1: "YYYY-MM-DD",  
+  2: "DD-MM-YYYY",  
+  3: "DD MMM YYYY", 
+};
+const FORMATS = ["YYYY-MM-DD", "DD-MM-YYYY", "DD/MM/YYYY", "DD MMM YYYY"];
+
+function isValidDate(value) {
+  return typeof value === "string" && dayjs(value.trim(),FORMATS, true).isValid();
+}
+
+function formatDate(value, type = 1) {
+  if (value === null || value === undefined || value === "") return null;
+  const d = typeof value === "string"
+    ? dayjs(value, FORMATS, true)
+    : dayjs(value);
+
+  if (!d.isValid()) return null;
+
+  return d.format(DATE_FORMATS[type] || DATE_FORMATS[1]);
+}
+
 module.exports={
-    cleanString,isEmpty,isValidPhone,isValidEmail,cleanArray
+    cleanString,isEmpty,formatDate,isValidPhone,isValidEmail,cleanArray,isValidDate
 }
 
 

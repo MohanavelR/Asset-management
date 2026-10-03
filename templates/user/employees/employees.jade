@@ -1,0 +1,99 @@
+extends ../../layout/userLayout
+
+block title 
+    title  Employees | Asset Management 
+block userContent 
+   div.pt-3 
+      div.d-flex.justify-content-between
+        
+         h2 Employees 
+         div 
+          a(href="/employees/add").btn.btn-primary 
+            i.fa-solid.fa-plus
+            |  Add Employee 
+    hr   
+   .row.g-3.mb-3.justify-content-between
+      .col-md-4
+          label.form-label Search
+          input#searchInput.form-control(type="search" placeholder="Name, email, phone, branch...")
+      .col-md-3
+          label.form-label Status
+          select#statusFilter.form-select
+              option(value="") All
+              option(value="Active" selected) Active
+              option(value="Inactive") Inactive
+   .card
+            .card-body
+                .table-responsive
+                    table#employeeTable.table.table-striped.table-hover.w-100
+                        thead
+                            tr
+                                th Emp ID
+                                th Name
+                                th Email
+                                th Phone
+                                th Department
+                                th Designation
+                                th Branch
+                                th Status
+                                th Action 
+                        tbody#employeeTableBody
+                              //-Loading    
+                           tr#employeeLoading
+                              td.py-4.text-center(colspan=9)
+                                 .spinner-border.text-primary(role="status",aria-hidden="true")
+                           tr#employeeEmpty.d-none
+                              td.text-center.py-4(colspan="9")
+                                  i.fa-solid.fa-users-slash.fa-2x.text-muted
+                                  p.mt-2.mb-0.text-muted
+                                      | No employees found.
+
+                                 //- Error
+                           tr#employeeError.d-none
+                              td.text-center.py-4(colspan="9")
+                                 i.fa-solid.fa-triangle-exclamation.fa-2x.text-danger
+                                 p.mt-2.mb-0.text-danger
+                                           | Unable to load employees.
+block scripts
+  script(src="/js/employees.js")
+  script.
+     async function deleteEmployee(id) {
+        if(!id){
+            return
+        }
+        try{
+            const isOk=confirm("Are Sure to Delete?")
+            if(isOk){
+                const response = await fetch(`/deleteEmployeeApi/${id}`, {
+                            method: "DELETE"
+                })
+                const res_data=await response.json()
+                if(res_data.success){
+                    showToast(res_data.message,"success")
+                    $("#employeeTable").DataTable().ajax.reload(null, false);
+                }
+                else{
+                    showToast(res_data.message,"danger")
+                }
+            } 
+        }
+        catch(error){
+               showToast(error.message,"danger")
+
+        }
+
+      }                                      
+                           
+//- extends ../../layout/userLayout
+
+//- block title 
+//-     title  Employees | Asset Management 
+//- block userContent 
+//-    div.pt-3 
+//-       div.d-flex.justify-content-between
+//-          h2 Employees 
+//-          div 
+//-           a(href="").btn.btn-primary 
+//-             i.fa-solid.fa-plus
+//-             |  Add Employee 
+//-       hr         

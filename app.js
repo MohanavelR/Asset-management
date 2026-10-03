@@ -13,6 +13,7 @@ const createAdmin = require("./helpers/createAdmin")
 const authRouter=require("./routers/authRoutes")
 const userRouter=require("./routers/userRoutes")
 const employeeRouter=require("./routers/employeeRoutes")
+const categoryRouter=require("./routers/assetCategory")
 const authMiddleWare = require("./middleware/authMiddleware")
 const apiErrorHandler = require("./helpers/apiErrorHandler")
 
@@ -46,12 +47,11 @@ function create_app(){
     APP.use("/",authRouter)
     APP.use("/",userRouter)
     APP.use("/",employeeRouter)
-
+    APP.use("/",categoryRouter)
     APP.use(apiErrorHandler)
-
     return APP
   } catch (error) {
-     logger.error(`${error.message}`);
+     logger.error(`${error}`);
   }
 }
 // ---------------
