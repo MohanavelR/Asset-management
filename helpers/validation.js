@@ -6,8 +6,13 @@ function cleanString(s){
   return typeof s==="string"? s.trim():""
 }
 
-function isEmpty (value){
-    return value===null || value===undefined || cleanString(value)===""
+function isEmpty(value) {
+  if (value === null || value === undefined) return true;
+  if (typeof value === "string") return value.trim() === "";
+  if (typeof value === "number") return Number.isNaN(value); // 0 is a real value, not empty
+  if (Array.isArray(value)) return value.length === 0;
+  if (typeof value === "object") return Object.keys(value).length === 0;
+  return false;
 }
 
 function isValidEmail(email) {
@@ -73,6 +78,9 @@ function formatDate(value, type = 1) {
 
   return d.format(DATE_FORMATS[type] || DATE_FORMATS[1]);
 }
+
+
+
 
 module.exports={
     cleanString,isEmpty,formatDate,isValidPhone,isValidEmail,cleanArray,isValidDate

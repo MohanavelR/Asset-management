@@ -1,0 +1,57 @@
+extends ../../layout/userLayout
+
+block title
+  title Stock View | Asset Management
+
+block userContent
+  div.pt-3
+    div.d-flex.justify-content-between
+      h2 Stock View
+      a(href="/issueAsset").btn.btn-primary
+        i.fa-solid.fa-share
+        |  Issue Asset
+    hr
+
+    .row.g-2.mb-3
+      .col-lg-4.col-md-12
+        input#searchInput.form-control(type="text", placeholder="Search by tag, serial no, make or model")
+      .col-lg-3.col-md-6
+        select#categoryFilter.form-select
+          option(value="") All Categories
+          each c in categories
+            option(value=c.id)= c.name
+      .col-lg-3.col-md-6
+        select#branchFilter.form-select
+          option(value="") All Branches
+          each b in branches
+            option(value=b)= b
+      .col-lg-2.col-md-12
+        button#resetFilters.btn.btn-light.border.w-100(type="button") Reset
+
+    //- Totals by branch (filled by JS)
+    #branchTotals.row.g-2.mb-3
+
+    #stockLoading.text-center.py-4.d-none
+      .spinner-border.spinner-border-sm(role="status")
+      span.ms-2 Loading stock...
+    #stockEmpty.alert.alert-light.border.text-center.d-none No assets in stock
+    #stockError.alert.alert-danger.text-center.d-none Failed to load stock. Please try again.
+
+    .table-responsive
+      table#stockTable.table.table-bordered.table-hover.align-middle.w-100
+        thead.table-light
+          tr
+            th Asset Tag
+            th Serial No
+            th Category
+            th Make
+            th Model
+            th Branch
+            th.text-end Price
+        tfoot.table-light
+          tr.fw-bold
+            th#footLabel(colspan="6") Total
+            th#footValue.text-end 0.00
+
+block scripts
+  script(src="/js/stock.js")

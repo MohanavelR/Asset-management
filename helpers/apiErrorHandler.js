@@ -16,7 +16,6 @@ const apiErrorHandler =function (err, req, res, next)  {
       message: "Duplicate entry",
       errors: err.errors.map((e) => ({
         field: e.path,
-        
         message: `${e.path} already exists`,
       })),
     });

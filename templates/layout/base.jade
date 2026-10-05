@@ -43,6 +43,7 @@ html(lang="en")
         script(src="https://cdn.datatables.net/1.13.8/js/dataTables.bootstrap5.min.js")
         script.
             
+            //-================Single Toast=====================
             function showToast(message, success = false) {
                 const toastElement = document.getElementById("toast-box");
                 const toastMessage = document.getElementById("toast-message");
@@ -53,8 +54,8 @@ html(lang="en")
 
                 bootstrap.Toast.getOrCreateInstance(toastElement).show();
             }
+            //-===============Mutiple Toast========================
 
-           
             function showToasts(messages, success = false) {
                 const list = document.getElementById("toast-list");
 
@@ -86,6 +87,20 @@ html(lang="en")
                     setTimeout(() => toast.show(), i * 150);
                     el.addEventListener("hidden.bs.toast", () => el.remove());
                 });
+            }
+            //-==============Set Loading or disabled Button=================
+            function setButtonLoading(button, loading = true, text = "Save") {
+                if (loading) {
+                    button
+                        .prop("disabled", true)
+                        .html(`
+                            <span class="spinner-border spinner-border-sm me-1" role="status"></span>
+                        `);
+                } else {
+                    button
+                        .prop("disabled", false)
+                        .html(text);
+                }
             }
 
         //======= Scripts Block ====

@@ -1,0 +1,80 @@
+extends ../../layout/userLayout
+
+block title
+    title Scrap Assets | Asset Management
+
+block userContent
+    div.pt-3
+        div.d-flex.justify-content-between
+            h2 Scrap Assets
+            button.btn.btn-danger(type="button", data-bs-toggle="modal", data-bs-target="#scrapModal")
+                i.fa-solid.fa-ban
+                |  Scrap / Re-stock
+        hr
+
+        .row.g-2.mb-3
+            .col-lg-6.col-md-12
+                input#searchInput.form-control(type="text", placeholder="Search by tag, serial no, make, model or branch")
+            .col-lg-4.col-md-8
+                select#categoryFilter.form-select
+                    option(value="") All Categories
+                    each c in categories
+                        option(value=c.id)= c.name
+            .col-lg-2.col-md-4
+                button#resetFilters.btn.btn-light.border.w-100(type="button") Reset
+
+        #scrapLoading.text-center.py-4.d-none
+            .spinner-border.spinner-border-sm(role="status")
+            span.ms-2 Loading...
+        #scrapEmpty.alert.alert-light.border.text-center.d-none No scrapped assets found
+        #scrapError.alert.alert-danger.text-center.d-none Failed to load assets. Please try again.
+
+        .table-responsive
+            table#scrapTable.table.table-bordered.table-hover.align-middle.w-100
+                thead.table-light
+                    tr
+                        th Asset Tag
+                        th Serial No
+                        th Category
+                        th Asset
+                        th Branch
+                        th Scrapped Date
+                        th Reason
+                        th Remarks
+
+    #scrapModal.modal.fade(tabindex="-1", aria-hidden="true")
+        .modal-dialog.modal-lg
+            .modal-content
+                form#scrapForm
+                    .modal-header
+                        h5.modal-title Scrap / Re-stock Asset
+                        button.btn-close(type="button", data-bs-dismiss="modal")
+                    .modal-body
+                        .row.g-3
+                            .col-md-6
+                                label.form-label Asset (In Stock / Repair)
+                                select.form-select(name="assetId")
+                                    option(value="") Select asset
+                                    each a in assets
+                                        option(value=a.id, data-status=a.status) #{a.assetTag} - #{a.make} #{a.model} (#{a.branch}) - #{a.status}
+                            .col-md-6
+                                label.form-label Reason (for scrap)
+                                select.form-select(name="reason")
+                                    option(value="") Select reason
+                                    each r in reasons
+                                        option(value=r)= r
+                            .col-md-6
+                                label.form-label Scrapped Date
+                                input.form-control(type="date", name="scrappedDate", value=today, max=today)
+                            .col-12
+                                label.form-label Remarks
+                                textarea.form-control(name="remarks", rows="2", placeholder="Required when the reason is Other")
+                    .modal-footer
+                        button.btn.btn-light.border(type="button", data-bs-dismiss="modal") Cancel
+                        button.btn.btn-success#restock-btn(type="button", disabled)
+                            i.fa-solid.fa-rotate-left
+                            |  Re-stock
+                        button.btn.btn-danger#scrap-save-btn(type="submit") Scrap
+
+block scripts
+    script(src="/js/scrap.js")

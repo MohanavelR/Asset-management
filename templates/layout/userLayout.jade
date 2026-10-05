@@ -68,19 +68,19 @@ block content
               div#operationsMenu.collapse.show
                 ul.nav.flex-column
                   li.nav-item.menu-item
-                    a.nav-link(href="/issue/stock", class=activePage === "stock" ? "active" : "")
+                    a.nav-link(href="/stocks", class=activePage === "stock" ? "active" : "")
                       i.fas.fa-warehouse.me-2
                       | Stock View
                   li.nav-item.menu-item
-                    a.nav-link(href="/issue", class=activePage === "issue" ? "active" : "")
+                    a.nav-link(href="/issueAssets", class=activePage === "issue" ? "active" : "")
                       i.fas.fa-arrow-right.me-2
                       | Issue Asset
                   li.nav-item.menu-item
-                    a.nav-link(href="/return/list", class=activePage === "return" ? "active" : "")
+                    a.nav-link(href="/returnAssets", class=activePage === "return" ? "active" : "")
                       i.fas.fa-arrow-left.me-2
                       | Return Asset
                   li.nav-item.menu-item
-                    a.nav-link(href="/scrap/list", class=activePage === "scrap" ? "active" : "")
+                    a.nav-link(href="/scrapAssets", class=activePage === "scrap" ? "active" : "")
                       i.fas.fa-trash.me-2
                       | Scrap Asset
         
@@ -88,7 +88,7 @@ block content
               hr.my-2
         
             li.nav-item.menu-item
-              a.nav-link(href="/history", class=activePage === "history" ? "active" : "")
+              a.nav-link(href="/assetHistory", class=activePage === "history" ? "active" : "")
                 i.fas.fa-history.me-2
                 | Asset History
       

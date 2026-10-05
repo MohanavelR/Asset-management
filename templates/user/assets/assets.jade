@@ -1,0 +1,77 @@
+extends ../../layout/userLayout
+
+block title
+  title Assets | Asset Management
+
+block userContent
+  div.pt-3
+    div.d-flex.justify-content-between
+      h2 Assets
+      div
+        a(href="/assets/add").btn.btn-primary
+          i.fa-solid.fa-plus
+          |  Add Asset
+    hr
+
+    .row.g-2.mb-3
+      .col-lg-5.col-md-12
+        input#searchInput.form-control(type="text", placeholder="Search by tag, serial no, make, model, vendor or branch")
+      .col-lg-3.col-md-6
+        select#categoryFilter.form-select
+          option(value="") All Categories
+          each c in categories
+            option(value=c.id)= c.name
+      .col-lg-3.col-md-6
+        select#statusFilter.form-select
+          option(value="") All Status
+          option(value="In Stock") In Stock
+          option(value="Issued") Issued
+          option(value="Returned") Returned
+      .col-lg-1.col-md-12
+        button#resetFilters.btn.btn-light.border.w-100(type="button", title="Reset")
+          i.fa-solid.fa-rotate-left
+
+    #assetLoading.text-center.py-4.d-none
+      .spinner-border.spinner-border-sm(role="status")
+      span.ms-2 Loading assets...
+    #assetEmpty.alert.alert-light.border.text-center.d-none No assets found
+    #assetError.alert.alert-danger.text-center.d-none Failed to load assets. Please try again.
+
+    .table-responsive
+      table#assetTable.table.table-bordered.table-hover.align-middle.w-100
+        thead.table-light
+          tr
+            th Asset Tag
+            th Serial No
+            th Category
+            th Make
+            th Model
+            th Branch
+            th Status
+            th Actions
+
+block scripts
+  script(src="/js/assets.js")
+  script.
+      async function deleteAsset(id) {
+       if (!id) {
+         return
+       }
+       try {
+         const isOk = confirm("Are you sure you want to delete this asset?\n\n" + "Deletion is not allowed if the asset is issued or has history.")
+         if (isOk) {
+           const response = await fetch(`/deleteAssetApi/${id}`, {
+             method: "DELETE"
+           })
+           const res_data = await response.json()
+           if (res_data.success) {
+             showToast(res_data.message, "success")
+             $("#assetTable").DataTable().ajax.reload(null, false)
+           } else {
+             showToast(res_data.message, "danger")
+           }
+         }
+       } catch (error) {
+         showToast(error.message, "danger")
+       }
+      }

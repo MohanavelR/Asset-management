@@ -1,40 +1,50 @@
 extends ../layout/base
 
 block title 
-   title  OTP Verification
+   title  OTP Verification | #{appName}
 
 block content 
   include includes/header
   div.container 
     div.row.justify-content-center.align-items-center.min-vh-100
        div.col-md-5.col-12
-        div.rounded.p-5.shadow-lg
-          h2.mt-2.text-center OTP Verification
+        div.rounded.px-5.py-3.app-border-secondary.app-bg-secondary
+          h2.mt-2.text-center.app-text-primary OTP Verification
           form#otp-form.login-form.mb-3
-            div.form-group
-               input.form-control(type="text",name="otp",id="otp")
+            //-===================OTP field==================
+            div.form-group.required-field
+               input.form-control(type="text",name="otp",id="otp",placeholder="Enter OTP")
                span.text-danger#otp-error.error-text  
+
             div.col-12.my-4
                 button.btn.btn-primary.w-100#otp-submit-btn Submit   
             div.text-center
-              a(href="/login") Back 
+              a(href="/login") <- Back 
 block scripts
      script.
-         $("#otp-form").on("submit",async(event)=>{
-          const otpSubmitBtn=$("#otp-submit-btn")
+        
+        //- ==========  OTP VERIFICATION API==============
+        $("#otp-form").on("submit",async(event)=>{
+           const otpSubmitBtn=$("#otp-submit-btn")
            try{
-            otpSubmitBtn.html('<div class="spinner-border spinner-border-sm" role="status"><span class="visually-hidden"></span></div>')
-            otpSubmitBtn.prop("disabled", true);
+            setButtonLoading(otpSubmitBtn, true, "Submit");
+
             event.preventDefault()
 
             const formData=new FormData(event.currentTarget)
             let isValid=true
             const otpError= $("#otp-error")
             otpError.text("")
-            if(formData.get("otp")?.trim()===""){
+            const otp=formData.get("otp")?.trim()
+            if(otp===""){
               otpError.text("This is Required")
               isValid=false
             }
+            if(otp && !Number.isInteger(Number(otp))){
+              otpError.text("Please enter a valid OTP")
+              isValid=false
+            }
+            
             if(!isValid){
               setTimeout(()=>{
               otpError.text("")
@@ -51,18 +61,18 @@ block scripts
 
             })
             const res_data=await response.json()
-            console.log(res_data)
-            showToast(res_data.message)
+            showToast(res_data.message,res_data?.success)
             if(res_data?.success){
-              window.location.href = "/set-password";
+              setTimeout(()=>{
+             window.location.replace("/set-password")
+              },300)
             }
            }
            catch(error){
              showToast(res_data.message)
            }
           finally{
-            otpSubmitBtn.html("submit")
-            otpSubmitBtn.prop("disabled", false);
+            setButtonLoading(otpSubmitBtn, false, "Submit");
           }
-         }) 
+        }) 
         

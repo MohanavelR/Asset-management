@@ -1,13 +1,55 @@
 
 const AssetCategory = require("../models/assetCategory");
 const logger = require("../helpers/logger");
-
+const { Op } = require("sequelize");
 exports.assetCategoryView = function (req, res, next) {
   try {
     res.render("user/category/categories", { activePage: "assetCategories" });
   } catch (error) {
     logger.error("Asset category view error:", error);
     next(error);
+  }
+};
+
+exports.categoryList = async (req, res) => {
+  try {
+    const start = parseInt(req.query.start) || 0;
+    const length = parseInt(req.query.length) || 10;
+    const search = (req.query.query || "").trim();
+
+    const where = search
+      ? {
+          [Op.or]: [
+            { name: { [Op.iLike]: `%${search}%` } },
+            
+          ],
+        }
+      : {};
+
+    const recordsTotal = await AssetCategory.count();
+    const { count: recordsFiltered, rows } = await AssetCategory.findAndCountAll({
+      where,
+      order: [["createdAt", "DESC"]],
+      offset: start,
+      limit: length,
+      raw: true,
+    });
+
+    res.json({
+      draw: parseInt(req.query.draw) || 0,
+      recordsTotal,
+      recordsFiltered,
+      data: rows,
+    });
+  } catch (err) {
+    logger.error("Employee List Error:", err);
+       res.status(500).json({
+         draw: parseInt(req.query.draw, 10) || 1,
+         recordsTotal: 0,
+         recordsFiltered: 0,
+         data: [],
+         error: "Server error",
+    });
   }
 };
 

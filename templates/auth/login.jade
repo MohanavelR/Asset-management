@@ -8,22 +8,27 @@ block content
   div.container 
     div.row.justify-content-center.align-items-center.min-vh-100
        div.col-md-5.col-12
-         div.rounded.px-5.pb-5.shadow-lg
+         div.rounded.px-5.pb-5.border.app-border-secondary.app-bg-secondary
           div.d-flex.col-12.justify-content-center 
             img(src="images/logo.jpeg", alt="",width="100px",height="100px").rounded-circle
-          h2.mt-2.text-center Login
+          h2.mt-2.text-center.my-2.app-text-primary Login
           form(id="login-form").login-form.mb-3
-            div.mb-2.form-group
-              label(for="loginId").form-label Email/Username
-              input(type="text",name="loginId",id="loginId").form-control
+            
+            //-========Username or Email field==============
+            div.mb-2.form-group.required-field
+              label(for="loginId").form-label 
+               | Email/Username 
+              input(type="text",name="loginId",id="loginId",placeholder="email or username").form-control
               span.text-danger#loginId-error.error-text  
-            div.mb-2.position-relative.form-group(id="login-password")
+            
+            //-=============Password Field===================
+            div.mb-2.position-relative.form-group.required-field(id="login-password")
               label(for="login-password-fleid").form-label Password 
-              //- span.text-danger.ms-1 * 
-              input(type="password",id="login-password-fleid",name="password").form-control.password-field.pe-4
-              span.position-absolute.password-icon(id="login-password-icon")
+              input(type="password",placeholder="●●●●●●●●",id="login-password-fleid",name="password").form-control.password-field.pe-4
+              span.position-absolute.password-icon.app-text-tertiary(id="login-password-icon")
                  i.fa-solid.fa-eye-slash
                span.text-danger#password-error.error-text  
+            
             div.text-end.my-3
               a(href="/forgot-password") Forgot Password?   
             div.col-12
@@ -32,12 +37,12 @@ block content
 block scripts
     
     script.
+        //-  ========== LOGIN API============================
          $("#login-form").on("submit",async(event)=>{
              event.preventDefault()
              const loginSubmitBtn=$("#login-submin-btn")
              try{
-                loginSubmitBtn.html('<div class="spinner-border spinner-border-sm" role="status"><span class="visually-hidden"></span></div>')
-                loginSubmitBtn.prop("disabled", true);
+                setButtonLoading(loginSubmitBtn, true, "Login");
                 const formData=new FormData(event.currentTarget)
                 let isValid=true
                 const loginIdError= $("#loginId-error")
@@ -72,22 +77,23 @@ block scripts
                   body:JSON.stringify(data)
                 })
                 const res_data=await response.json()
-                showToast(res_data.message)
+                showToast(res_data.message,res_data?.success)
                 if(res_data?.success){
-                  //- window.location.href="/"
+                  setTimeout(()=>{
                    window.location.replace("/");
-                  //- localStorage.setItem("token",res_data.token)
+                  },300)
                 }
              }  
              catch(error){
                showToast(error.message)
              }
              finally{
-                 loginSubmitBtn.html("Login")
-                 loginSubmitBtn.prop("disabled", false);
+                setButtonLoading(loginSubmitBtn, false, "Login");
              }
               }) 
-
+          
+          
+          //- ====== Password Show and Hidden Process===========
          const passwordInputField=document.getElementById("login-password-fleid");
          const passwordIcon=document.getElementById("login-password-icon");
          passwordIcon.addEventListener("click",()=>{

@@ -1,10 +1,33 @@
-typeof $.fn.DataTable
+
 const table=$("#employeeTable").DataTable({
    serverSide:true,
-   processing:false,
+   processing:true,
    dom:"lrtip",
    pageLength:10,
    lengthMenu:[10,25,50,100],
+   language: {
+    processing: `
+            <div class="py-3 text-center">
+                <div class="spinner-border text-primary" role="status"></div>
+                <div class="mt-2 text-muted">Loading employees...</div>
+            </div>
+        `,
+
+        emptyTable: `
+            <div class="py-4 text-center text-muted">
+                <i class="fa-solid fa-users-slash fs-3 mb-2"></i>
+                <div>No employees found</div>
+            </div>
+        `,
+
+        zeroRecords: `
+            <div class="py-4 text-center text-muted">
+                <i class="fa-solid fa-magnifying-glass fs-3 mb-2"></i>
+                <div>No matching employees found</div>
+            </div>
+        `,
+
+   },
    ajax:{
     url:"/employeesApi",
     data:function(d){
@@ -66,30 +89,21 @@ const table=$("#employeeTable").DataTable({
    ],
    order:[]
 })
+
 // onview
 table.on("xhr.dt", function (event, settings, json) {
-   $("#employeeLoading").addClass("d-none")
-   if(!json || !json.data|| json?.data?.length===0){
-      $("#employeeEmpty").removeClass("d-none");
-   }
-   else{
-    $("#employeeEmpty").addClass("d-none");
-   }
+      $("#employeeError").addClass("d-none");
 })
 // onLoading 
 table.on("preXhr.dt", function () {
-      $("#employeeLoading").removeClass("d-none")
-      $("#employeeEmpty").addClass("d-none");
       $("#employeeError").addClass("d-none");
 
 });
-
-
+// Error
 table.on("error.dt", function () {
-  $("#employeeEmpty").addClass("d-none");
-  $("#employeeLoading").addClass("d-none")
   $("#employeeError").removeClass("d-none");
 });
+
 let filterTimer;
 function reloadTable() {
 

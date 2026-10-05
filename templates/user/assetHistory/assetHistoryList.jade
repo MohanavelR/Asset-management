@@ -1,0 +1,57 @@
+extends ../../layout/userLayout
+
+block title
+    title Asset History | Asset Management
+
+block userContent
+    div.pt-3
+        h2 Asset History
+        p.text-muted.mb-2 Every purchase, issue, return, re-stock and scrap event. Click History for one asset's full timeline.
+        hr
+
+        .row.g-2.mb-3
+            .col-lg-3.col-md-12
+                input#searchInput.form-control(type="text", placeholder="Search tag, serial, make, model, employee")
+            .col-lg-2.col-md-6
+                select#categoryFilter.form-select
+                    option(value="") All Categories
+                    each c in categories
+                        option(value=c.id)= c.name
+            .col-lg-2.col-md-6
+                select#actionFilter.form-select
+                    option(value="") All Actions
+                    option(value="Purchased") Purchased
+                    option(value="Issued") Issued
+                    option(value="Returned") Returned
+                    option(value="Re-stocked") Re-stocked
+                    option(value="Scrapped") Scrapped
+            .col-lg-2.col-md-6
+                input#fromDate.form-control(type="date", title="From date")
+            .col-lg-2.col-md-6
+                input#toDate.form-control(type="date", title="To date")
+            .col-lg-1.col-md-12
+                button#resetFilters.btn.btn-light.border.w-100(type="button", title="Reset")
+                    i.fa-solid.fa-rotate-left
+
+        #historyLoading.text-center.py-4.d-none
+            .spinner-border.spinner-border-sm(role="status")
+            span.ms-2 Loading...
+        #historyEmpty.alert.alert-light.border.text-center.d-none No history found
+        #historyError.alert.alert-danger.text-center.d-none Failed to load history. Please try again.
+
+        .table-responsive
+            table#historyTable.table.table-bordered.table-hover.align-middle.w-100
+                thead.table-light
+                    tr
+                        th Date
+                        th Asset Tag
+                        th Asset
+                        th Action
+                        th Employee
+                       
+                        th Status Change
+                        
+                        th Timeline
+
+block scripts
+    script(src="/js/assetHistory.js")

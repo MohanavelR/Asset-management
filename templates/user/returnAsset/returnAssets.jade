@@ -1,0 +1,86 @@
+extends ../../layout/userLayout
+
+block title
+    title Return Assets | Asset Management
+
+block userContent
+    div.pt-3
+        div.d-flex.justify-content-between
+            h2 Return Assets
+            div
+                button.btn.btn-primary(type="button", data-bs-toggle="modal", data-bs-target="#returnModal")
+                    i.fa-solid.fa-rotate-left
+                    |  Return Asset
+        hr
+
+        //- Filters
+        .row.g-2.mb-3
+            .col-lg-4.col-md-12
+                input#searchInput.form-control(type="text", placeholder="Search by tag, serial no, make, model or employee")
+            .col-lg-3.col-md-6
+                select#categoryFilter.form-select
+                    option(value="") All Categories
+                    each c in categories
+                        option(value=c.id)= c.name
+            .col-lg-3.col-md-6
+                select#reasonFilter.form-select
+                    option(value="") All Reasons
+                    each r in reasons
+                        option(value=r)= r
+            .col-lg-2.col-md-12
+                button#resetFilters.btn.btn-light.border.w-100(type="button") Reset
+
+        #returnLoading.text-center.py-4.d-none
+            .spinner-border.spinner-border-sm(role="status")
+            span.ms-2 Loading...
+        #returnEmpty.alert.alert-light.border.text-center.d-none No returned assets found
+        #returnError.alert.alert-danger.text-center.d-none Failed to load records. Please try again.
+
+        .table-responsive
+            table#returnTable.table.table-bordered.table-hover.align-middle.w-100
+                thead.table-light
+                    tr
+                        th Asset Tag
+                        th Asset
+                        th Employee
+                        th Issue Date
+                        th Return Date
+                        th Reason
+                        th Remarks
+
+    //- Return modal
+    #returnModal.modal.fade(tabindex="-1", aria-hidden="true")
+        .modal-dialog.modal-lg
+            .modal-content
+                form#returnForm
+                    .modal-header
+                        h5.modal-title Return Asset
+                        button.btn-close(type="button", data-bs-dismiss="modal")
+                    .modal-body
+                        .row.g-3
+                            .col-md-6
+                                label.form-label Issued Asset
+                                select.form-select(name="assetId")
+                                    option(value="") Select asset
+                                    each i in issues
+                                        option(value=i.asset.id, selected=String(i.asset.id) === String(selectedAssetId)) #{i.asset.assetTag} - #{i.asset.make} #{i.asset.model} (#{i.employee.name})
+                            
+                            .col-md-6
+                                label.form-label Reason for Return
+                                select.form-select(name="reason")
+                                    option(value="") Select reason
+                                    each r in reasons
+                                        option(value=r)= r
+                            .col-md-6
+                                label.form-label Return Date
+                                input.form-control(type="date", name="returnDate", value=today, max=today)
+                            
+                            .col-12
+                                label.form-label Remarks
+                                textarea.form-control(name="remarks", rows="2", placeholder="Required when the reason is Other")
+                    .modal-footer
+                        button.btn.btn-light.border(type="button", data-bs-dismiss="modal") Cancel
+                        button.btn.btn-primary#return-save-btn(type="submit") Return
+
+block scripts
+    script(src="/js/return.js")

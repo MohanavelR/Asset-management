@@ -1,0 +1,107 @@
+extends ../../layout/userLayout
+
+block title
+    title Asset History | Asset Management
+
+block userContent
+    - const a = asset
+    - const money = function (v) { return Number(v || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }
+    - const dt = function (v) { return v ? v.split('-').reverse().join('-') : '-' }
+    - const statusColors = { 'In Stock': 'success', 'Issued': 'primary', 'Returned': 'warning', 'Scrapped': 'danger' }
+    - const actionColors = { 'Purchased': 'secondary', 'Issued': 'primary', 'Returned': 'warning', 'Re-stocked': 'success', 'Scrapped': 'danger' }
+    - const actionIcons = { 'Purchased': 'fa-cart-shopping', 'Issued': 'fa-user-check', 'Returned': 'fa-rotate-left', 'Re-stocked': 'fa-box', 'Scrapped': 'fa-ban' }
+
+    div.pt-3
+        div.d-flex.justify-content-between
+            .d-flex.align-items-center
+                a.text-dark.me-3.fs-3(href='/assetHistory', title='Back')
+                    i.fas.fa-arrow-left
+                h2.mb-0 Asset History
+            div
+                if a.status !== 'Scrapped'
+                    a.btn.btn-outline-primary(href='/assets/view/' + a.id)
+                        i.fas.fa-eye.me-1
+                        | Asset Details
+        hr
+
+        //- Asset summary
+        .card.shadow-sm.border-0.mb-4
+            .card-body
+                .row.g-3
+                    .col-lg-3.col-md-6
+                        .text-muted.small Asset Tag
+                        .fw-semibold= a.assetTag
+                    .col-lg-3.col-md-6
+                        .text-muted.small Serial No
+                        .fw-semibold= a.serial_no
+                    .col-lg-3.col-md-6
+                        .text-muted.small Asset
+                        .fw-semibold= a.make + ' ' + a.model
+                    .col-lg-3.col-md-6
+                        .text-muted.small Status
+                        span.badge(class='text-bg-' + (statusColors[a.status] || 'secondary'))= a.status
+                    .col-lg-3.col-md-6
+                        .text-muted.small Category
+                        .fw-semibold= a.categoryInfo ? a.categoryInfo.name : '-'
+                    .col-lg-3.col-md-6
+                        .text-muted.small Branch
+                        .fw-semibold= a.branch
+                    .col-lg-3.col-md-6
+                        .text-muted.small Vendor
+                        .fw-semibold= a.vendor
+                    .col-lg-3.col-md-6
+                        .text-muted.small Purchase Date
+                        .fw-semibold= dt(a.acqDate)
+
+        //- Utilization of money invested
+        .row.g-3.mb-4
+            .col-lg-3.col-md-6
+                .card.shadow-sm.border-0.h-100
+                    .card-body
+                        .text-muted.small Money Invested
+                        .fs-5.fw-bold= money(summary.price)
+            .col-lg-3.col-md-6
+                .card.shadow-sm.border-0.h-100
+                    .card-body
+                        .text-muted.small Times Issued
+                        .fs-5.fw-bold= summary.issueCount
+            .col-lg-3.col-md-6
+                .card.shadow-sm.border-0.h-100
+                    .card-body
+                        .text-muted.small Days in Use
+                        .fs-5.fw-bold #{summary.daysIssued} of #{summary.lifeDays} days
+                        .small.text-muted #{summary.utilization}% utilization
+            .col-lg-3.col-md-6
+                .card.shadow-sm.border-0.h-100
+                    .card-body
+                        .text-muted.small Cost per Day in Use
+                        .fs-5.fw-bold= summary.costPerIssuedDay !== null ? money(summary.costPerIssuedDay) : 'Never issued'
+
+        //- Timeline (compact, with icons)
+        .card.shadow-sm.border-0
+            .card-header.bg-white.fw-bold
+                i.fas.fa-clock-rotate-left.me-2.text-primary
+                | Timeline
+            .card-body
+                if history.length
+                    ul.tl
+                        each h in history
+                            li(class='tl-' + (actionColors[h.action] || 'secondary'))
+                                span.tl-icon
+                                    i.fa-solid(class=actionIcons[h.action] || 'fa-circle')
+                                .tl-date= dt(h.actionDate)
+                                .tl-text
+                                    strong= h.action
+                                    if h.employee
+                                        |  · #{h.employee.name}
+                                    if h.reason
+                                        |  · #{h.reason}
+                                    if h.amount !== null && h.amount !== undefined
+                                        |  · #{money(h.amount)}
+                                    .small.text-muted
+                                        i.fa-solid.fa-arrow-right-arrow-left.me-2
+                                        | #{h.fromStatus || 'New'} → #{h.toStatus}
+                                    if h.remarks
+                                        .small.fst-italic= h.remarks
+                else
+                    p.text-muted.text-center.mb-0 No history recorded yet

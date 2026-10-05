@@ -17,7 +17,7 @@ const onDB=async ()=>{
     try {
        await sequelize.authenticate()
        logger.info("Database connected")
-       await sequelize.sync({alter:true}) 
+       await sequelize.sync() 
        logger.info("Database models synchronized")
     } catch (error) {
        logger.error("Database connection failed:", error.message) 

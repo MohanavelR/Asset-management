@@ -1,6 +1,160 @@
 extends ../layout/userLayout
 
-block title 
-    title  Dashboard 
-block userContent 
-   h1 
+block title
+    title Dashboard | Asset Management
+
+block userContent
+    - const money = function (v) { return Number(v || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }
+    - const dt = function (v) { return v ? v.split('-').reverse().join('-') : '-' }
+    - const actionColors = { 'Purchased': 'secondary', 'Issued': 'primary', 'Returned': 'warning', 'Re-stocked': 'success', 'Scrapped': 'danger' }
+
+    div.container-fluid.py-3
+        //- Dashboard Header
+        .d-flex.justify-content-between.align-items-center.mb-4
+            div
+                h2.fw-bold.mb-1.app-text-primary Dashboard
+                p.app-text-tertiary.small.mb-0 Overview of assets, stock distribution, and recent operations
+            a.btn.btn-outline-primary.btn-sm.rounded-pill(href='/assetHistory')
+                i.fas.fa-clock-rotate-left.me-1
+                | View History
+
+        //- Primary Metrics Grid (6 KPI Cards)
+        .row.g-3.mb-4
+            .col-12.col-sm-6.col-lg-4.col-xl-2
+                a.text-decoration-none(href='/assets')
+                    .card.border-0.h-100.app-border-secondary.app-bg-secondary
+                        .card-body.p-3
+                            .d-flex.justify-content-between.align-items-center.mb-2
+                                span.app-text-secondary.small.fw-semibold Total Assets
+                                .p-2.rounded-3.bg-dark-subtle.text-dark
+                                    i.fas.fa-boxes-stacked
+                            .fs-4.fw-bold.app-text-tertiary= activeCount || 0
+
+            .col-12.col-sm-6.col-lg-4.col-xl-2
+                a.text-decoration-none(href='/stock')
+                    .card.border-0.app-border-secondary.app-bg-secondary.h-100
+                        .card-body.p-3
+                            .d-flex.justify-content-between.align-items-center.mb-2
+                                span.app-text-secondary.small.fw-semibold In Stock
+                                .p-2.rounded-3.bg-success-subtle.text-success
+                                    i.fas.fa-box-archive
+                            .fs-4.fw-bold.app-text-tertiary= stat['In Stock'] || 0
+
+            .col-12.col-sm-6.col-lg-4.col-xl-2
+                a.text-decoration-none(href='/issueAsset')
+                    .card.border-0.app-border-secondary.app-bg-secondary.h-100
+                        .card-body.p-3
+                            .d-flex.justify-content-between.align-items-center.mb-2
+                                span.app-text-secondary.small.fw-semibold Issued
+                                .p-2.rounded-3.bg-primary-subtle.text-primary
+                                    i.fas.fa-user-check
+                            .fs-4.fw-bold.app-text-tertiary= stat['Issued'] || 0
+
+            .col-12.col-sm-6.col-lg-4.col-xl-2
+                a.text-decoration-none(href='/scrapAsset')
+                    .card.border-0.app-border-secondary.app-bg-secondary.h-100
+                        .card-body.p-3
+                            .d-flex.justify-content-between.align-items-center.mb-2
+                                span.app-text-secondary.small.fw-semibold Returned
+                                .p-2.rounded-3.bg-warning-subtle.text-warning
+                                    i.fas.fa-rotate-left
+                            .fs-4.fw-bold.app-text-tertiary= stat['Returned'] || 0
+
+            .col-12.col-sm-6.col-lg-4.col-xl-2
+                a.text-decoration-none(href='/scrapAsset')
+                    .card.border-0.app-border-secondary.app-bg-secondary.h-100
+                        .card-body.p-3
+                            .d-flex.justify-content-between.align-items-center.mb-2
+                                span.app-text-secondary.small.fw-semibold Scrapped
+                                .p-2.rounded-3.bg-danger-subtle.text-danger
+                                    i.fas.fa-trash-can
+                            .fs-4.fw-bold.app-text-tertiary= stat['Scrapped'] || 0
+
+            .col-12.col-sm-6.col-lg-4.col-xl-2
+                .card.border-0.app-border-secondary.app-bg-secondary.h-100
+                    .card-body.p-3
+                        .d-flex.justify-content-between.align-items-center.mb-2
+                            span.app-text-secondary.small.fw-semibold Active Staff
+                            .p-2.rounded-3.bg-info-subtle.text-info
+                                i.fas.fa-users
+                        .fs-4.fw-bold.app-text-tertiary= activeEmployees || 0
+
+        //- Row 1: Stock by Branch (Full Width)
+        .row.g-3.mb-4
+            .col-12
+                .card.border-0.app-border-secondary.app-bg-secondary
+                    .card-header.bg-transparent.border-bottom.app-border-primary.pt-3.pb-2.d-flex.justify-content-between.align-items-center
+                        h6.fw-bold.mb-0
+                            i.fas.fa-location-dot.me-2.text-primary
+                            | Stock by Branch
+                        span.badge.bg-light.app-text-secondary.border.app-border-secondary= branches ? branches.length : 0
+                    .table-responsive
+                        table.table.table-hover.align-middle.mb-0
+                            thead.table-light.small.text-muted
+                                tr
+                                    th.ps-3 Branch Name
+                                    th.text-end.pe-3 Available Assets
+                            tbody
+                                if branches && branches.length
+                                    each b in branches
+                                        tr
+                                            td.ps-3.fw-medium= b.branch
+                                            td.text-end.pe-3
+                                                span.badge.bg-primary-subtle.text-primary.px-3.py-1.rounded-pill= b.total
+                                else
+                                    tr
+                                        td.text-center.text-muted.py-4(colspan='2') No assets in stock across branches
+
+        //- Row 2: Assets by Category (Separate Full Width Section with Grid Cards)
+        .row.g-3.mb-4
+            .col-12
+                .card.border-0.shadow-sm
+                    .card-header.bg-transparent.border-bottom.pt-3.pb-2.d-flex.justify-content-between.align-items-center
+                        h6.fw-bold.mb-0
+                            i.fas.fa-layer-group.me-2.text-primary
+                            | Assets by Category
+                        span.badge.bg-light.text-dark.border= byCategory ? byCategory.length : 0
+                    .card-body.p-3
+                        if byCategory && byCategory.length
+                            .row.row-cols-1.row-cols-sm-2.row-cols-md-3.row-cols-lg-4.g-3
+                                each c in byCategory
+                                    .col
+                                        .p-3.rounded-3.border.bg-light-subtle.d-flex.justify-content-between.align-items-center
+                                            .d-flex.align-items-center
+                                                .p-2.rounded-2.bg-white.shadow-sm.me-2.text-primary
+                                                    i.fas.fa-folder.small
+                                                span.fw-semibold.text-dark= c.name
+                                            span.badge.bg-primary.rounded-pill.px-3.py-1= c.total
+                        else
+                            .text-center.text-muted.py-4
+                                i.fas.fa-folder-open.fa-2x.mb-2.d-block.opacity-25
+                                | No category data available
+
+        //- Row 3: Recent Activity Log
+        .row.g-3
+            .col-12
+                .card.border-0.shadow-sm
+                    .card-header.bg-transparent.border-bottom.pt-3.pb-2.d-flex.justify-content-between.align-items-center
+                        h6.fw-bold.mb-0
+                            i.fas.fa-clock-rotate-left.me-2.text-primary
+                            | Recent Activity Log
+                        a.btn.btn-sm.btn-link.text-decoration-none.p-0(href='/assetHistory') View full history &rarr;
+                    .card-body.p-0
+                        ul.list-group.list-group-flush
+                            if recent && recent.length
+                                each h in recent
+                                    li.list-group-item.px-3.py-3.d-flex.flex-wrap.justify-content-between.align-items-center.gap-2
+                                        .d-flex.align-items-center.gap-2
+                                            span.badge.rounded-pill(class='text-bg-' + (actionColors[h.action] || 'secondary'))= h.action
+                                            a.fw-semibold.text-decoration-none.text-dark(href='/assets/history/' + h.asset.id)
+                                                | #{h.asset.assetTag}
+                                            span.text-muted.small — #{h.asset.make} #{h.asset.model}
+                                            if h.employee
+                                                span.badge.bg-light.text-dark.border.ms-1
+                                                    i.fas.fa-user.me-1.text-secondary.small
+                                                    | #{h.employee.name}
+                                        .text-muted.small.d-flex.align-items-center
+                                            i.far.fa-calendar-alt.me-1
+                                            | #{dt(h.actionDate)}
+                            else
+                                li.list-group-item.text-muted.text-center.py-4 No recent activity recorded

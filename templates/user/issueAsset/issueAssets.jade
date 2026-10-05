@@ -1,0 +1,77 @@
+extends ../../layout/userLayout
+
+block title
+    title Issue Assets | Asset Management
+
+block userContent
+    div.pt-3
+        div.d-flex.justify-content-between
+            h2 Issue Assets
+            div
+                button.btn.btn-primary(type="button", data-bs-toggle="modal", data-bs-target="#issueModal")
+                    i.fa-solid.fa-plus
+                    |  Issue Asset
+        hr
+
+        //- Filters
+        .row.g-2.mb-3
+            .col-lg-6.col-md-12
+                input#searchInput.form-control(type="text", placeholder="Search by tag, serial no, make, model or employee")
+            .col-lg-4.col-md-8
+                select#categoryFilter.form-select
+                    option(value="") All Categories
+                    each c in categories
+                        option(value=c.id)= c.name
+            .col-lg-2.col-md-4
+                button#resetFilters.btn.btn-light.border.w-100(type="button") Reset
+
+        #issueLoading.text-center.py-4.d-none
+            .spinner-border.spinner-border-sm(role="status")
+            span.ms-2 Loading...
+        #issueEmpty.alert.alert-light.border.text-center.d-none No assets are currently issued
+        #issueError.alert.alert-danger.text-center.d-none Failed to load records. Please try again.
+
+        .table-responsive
+            table#issueTable.table.table-bordered.table-hover.align-middle.w-100
+                thead.table-light
+                    tr
+                        th Asset Tag
+                        th Asset
+                        th Employee
+                        th Issue Date
+                        th Remarks
+
+    //- Issue modal
+    #issueModal.modal.fade(tabindex="-1", aria-hidden="true")
+        .modal-dialog.modal-lg
+            .modal-content
+                form#issueForm
+                    .modal-header
+                        h5.modal-title Issue Asset
+                        button.btn-close(type="button", data-bs-dismiss="modal")
+                    .modal-body
+                        .row.g-3
+                            .col-md-6
+                                label.form-label Asset (In Stock)
+                                select.form-select(name="assetId")
+                                    option(value="") Select asset
+                                    each a in assets
+                                        option(value=a.id, selected=String(a.id) === String(selectedAssetId)) #{a.assetTag} - #{a.make} #{a.model} (#{a.branch})
+                            .col-md-6
+                                label.form-label Employee
+                                select.form-select(name="employeeId")
+                                    option(value="") Select employee
+                                    each e in employees
+                                        option(value=e.id) #{e.employeeId} - #{e.name} (#{e.department})
+                            .col-md-6
+                                label.form-label Issue Date
+                                input.form-control(type="date", name="issuedDate", value=today, max=today)
+                            .col-12
+                                label.form-label Remarks
+                                textarea.form-control(name="remarks", rows="2")
+                    .modal-footer
+                        button.btn.btn-light.border(type="button", data-bs-dismiss="modal") Cancel
+                        button.btn.btn-primary#issue-save-btn(type="submit") Issue
+
+block scripts
+    script(src="/js/issue.js")
