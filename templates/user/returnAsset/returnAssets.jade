@@ -1,86 +1,152 @@
 extends ../../layout/userLayout
+include ../../components/branchSelect
+include ../../components/formInput
+include ../../components/formSelect
+include ../../components/formTextarea
 
 block title
     title Return Assets | Asset Management
 
 block userContent
+    - const categoryOptions = (categories || []).map(function (c) { return { value: c.id, label: c.name } })
+    - const issuedOptions = (issues || []).map(function (i) { return { value: String(i.asset.id), label: i.asset.assetTag + ' - ' + i.asset.make + ' ' + i.asset.model + ' (' + i.employee.name + ')' } })
+
     div.pt-3
-        div.d-flex.justify-content-between
-            h2 Return Assets
+        //- ========== Header =============
+        .d-flex.flex-column.flex-sm-row.justify-content-sm-between.align-items-start.align-items-sm-center.mb-4
             div
-                button.btn.btn-primary(type="button", data-bs-toggle="modal", data-bs-target="#returnModal")
+                h2.fw-bold.mb-1.app-text-primary Return Assets
+                p.app-text-tertiary.small.mb-0 Receive issued assets back from employees and view returned asset records
+            div.mt-3.mt-sm-0
+                button.btn.btn-primary(type='button', data-bs-toggle='modal', data-bs-target='#returnModal')
                     i.fa-solid.fa-rotate-left
                     |  Return Asset
         hr
 
-        //- Filters
         .row.g-2.mb-3
+            //-============ Search Filter ========
             .col-lg-4.col-md-12
-                input#searchInput.form-control(type="text", placeholder="Search by tag, serial no, make, model or employee")
+                +formInput({
+                    id: 'searchInput',
+                    label: 'Search',
+                    name: 'search',
+                    type: 'search',
+                    placeholder: 'Tag, serial no, make, model or employee'
+                })
+
+            //-============ Category Filter ========
             .col-lg-3.col-md-6
-                select#categoryFilter.form-select
-                    option(value="") All Categories
-                    each c in categories
-                        option(value=c.id)= c.name
+                +formSelect({
+                    id: 'categoryFilter',
+                    label: 'Category',
+                    name: 'category',
+                    options: categoryOptions,
+                    placeholder: 'All Categories'
+                })
+            
+            //-============ Branch Filter ========
             .col-lg-3.col-md-6
-                select#reasonFilter.form-select
-                    option(value="") All Reasons
-                    each r in reasons
-                        option(value=r)= r
-            .col-lg-2.col-md-12
-                button#resetFilters.btn.btn-light.border.w-100(type="button") Reset
+                +branchSelect({
+                    id: 'branchFilter',
+                    label: 'Branch',
+                    placeholder: 'All Branches'
+                })
 
-        #returnLoading.text-center.py-4.d-none
-            .spinner-border.spinner-border-sm(role="status")
-            span.ms-2 Loading...
-        #returnEmpty.alert.alert-light.border.text-center.d-none No returned assets found
-        #returnError.alert.alert-danger.text-center.d-none Failed to load records. Please try again.
 
-        .table-responsive
-            table#returnTable.table.table-bordered.table-hover.align-middle.w-100
-                thead.table-light
-                    tr
-                        th Asset Tag
-                        th Asset
-                        th Employee
-                        th Issue Date
-                        th Return Date
-                        th Reason
-                        th Remarks
+            //-============ Reason Filter ========
+            .col-lg-3.col-md-6
+                +formSelect({
+                    id: 'reasonFilter',
+                    label: 'Reason',
+                    name: 'reasonFilter',
+                    options: reasons,
+                    placeholder: 'All Reasons'
+                })
 
-    //- Return modal
-    #returnModal.modal.fade(tabindex="-1", aria-hidden="true")
+            //- ======== Reset Filters ========
+            .col-lg-2.col-md-12.d-flex.flex-column.gap-1
+                label.form-label.mb-0 Reset
+                button#resetFilters.btn.btn-light.border.w-100(type='button', title='Reset')
+                    i.fa-solid.fa-rotate-left
+        hr
+        //- ======== Return Table ========
+        .card.app-bg-secondary.app-border-primary
+            .card-body
+                .table-responsive
+                    table#returnTable.table.table-hover.align-middle.app-table.w-100
+                        thead
+                            tr
+                                th Asset Tag
+                                th Asset
+                                th Employee
+                                th Issue Date
+                                th Return Date
+                                th Reason
+                                th Remarks
+                        tbody#returnTableBody
+                            //- Error
+                            tr#returnError.d-none
+                                td.text-center.py-4(colspan='7')
+                                    i.fa-solid.fa-triangle-exclamation.fa-2x.text-danger
+                                    p.mt-2.mb-0.text-danger Unable to load returned assets.
+
+    //- ======== Return Modal ========
+    #returnModal.modal.fade(tabindex='-1', aria-hidden='true')
         .modal-dialog.modal-lg
             .modal-content
                 form#returnForm
                     .modal-header
                         h5.modal-title Return Asset
-                        button.btn-close(type="button", data-bs-dismiss="modal")
+                        button.btn-close(type='button', data-bs-dismiss='modal')
                     .modal-body
                         .row.g-3
-                            .col-md-6
-                                label.form-label Issued Asset
-                                select.form-select(name="assetId")
-                                    option(value="") Select asset
-                                    each i in issues
-                                        option(value=i.asset.id, selected=String(i.asset.id) === String(selectedAssetId)) #{i.asset.assetTag} - #{i.asset.make} #{i.asset.model} (#{i.employee.name})
-                            
-                            .col-md-6
-                                label.form-label Reason for Return
-                                select.form-select(name="reason")
-                                    option(value="") Select reason
-                                    each r in reasons
-                                        option(value=r)= r
-                            .col-md-6
-                                label.form-label Return Date
-                                input.form-control(type="date", name="returnDate", value=today, max=today)
-                            
-                            .col-12
-                                label.form-label Remarks
-                                textarea.form-control(name="remarks", rows="2", placeholder="Required when the reason is Other")
+                            //- ====== Issued Asset ======
+                            .col-md-6.form-group.required-field
+                                +formSelect({
+                                    label: 'Issued Asset',
+                                    name: 'assetId',
+                                    options: issuedOptions,
+                                    selected: selectedAssetId ? String(selectedAssetId) : '',
+                                    required: true,
+                                    placeholder: 'Select asset'
+                                })
+
+                            //- ====== Reason ======
+                            .col-md-6.form-group.required-field
+                                +formSelect({
+                                    label: 'Reason for Return',
+                                    name: 'reason',
+                                    options: reasons,
+                                    required: true,
+                                    placeholder: 'Select reason'
+                                })
+
+                            //- ====== Return Date ======
+                            .col-md-6.form-group.required-field
+                                +formInput({
+                                    label: 'Return Date',
+                                    name: 'returnDate',
+                                    type: 'date',
+                                    value: today,
+                                    required: true
+                                })(max=today)
+
+                            //- ====== Remarks ======
+                            .col-12.form-group
+                                +formTextarea({
+                                    label: 'Remarks',
+                                    name: 'remarks',
+                                    rows: 2,
+                                    placeholder: 'Required when the reason is Other'
+                                })
                     .modal-footer
-                        button.btn.btn-light.border(type="button", data-bs-dismiss="modal") Cancel
-                        button.btn.btn-primary#return-save-btn(type="submit") Return
+                        button.btn.btn-light.border(type='button', data-bs-dismiss='modal') Cancel
+                        button#return-save-btn.btn.btn-primary(type='submit') Return
 
 block scripts
-    script(src="/js/return.js")
+    script(src='/js/return.js')
+    script.
+        $("#resetFilters").on("click", function () {
+           $("#searchInput, #categoryFilter, #branchFilter, #reasonFilter").val("");
+           table.ajax.reload();
+        });

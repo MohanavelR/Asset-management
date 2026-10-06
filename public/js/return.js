@@ -4,19 +4,23 @@ const esc = (v) => $("<div>").text(v || "-").html();
 // ======================= DataTable =======================
 const table = $("#returnTable").DataTable({
   serverSide: true,
-  processing: false,
+  processing: true,
   ordering: false,
   dom: "lrtip",
   pageLength: 10,
   lengthMenu: [10, 25, 50, 100],
+  language: dataTableMessages("Returned Assets", "fas fa-box"),
   ajax: {
     url: "/returnsApi",
     data: function (d) {
       d.query = ($("#searchInput").val() || "").trim();
       d.category = $("#categoryFilter").val() || "";
       d.reason = $("#reasonFilter").val() || "";
+      d.branch = $("#branchFilter").val() || "";
     },
-    dataSrc: function (res) { return res.data; }
+    dataSrc: function (res) {
+      return res.data;
+    }
   },
   columns: [
     { data: "asset.assetTag" },
@@ -29,46 +33,31 @@ const table = $("#returnTable").DataTable({
   ]
 });
 
+// ============= on Loading =============
 table.on("preXhr.dt", function () {
-  $("#returnLoading").removeClass("d-none");
-  $("#returnEmpty").addClass("d-none");
   $("#returnError").addClass("d-none");
 });
 
-table.on("xhr.dt", function (event, settings, json) {
-  $("#returnLoading").addClass("d-none");
-  if (!json || !json.data || json.data.length === 0) {
-    $("#returnEmpty").removeClass("d-none");
-  } else {
-    $("#returnEmpty").addClass("d-none");
-  }
+// ============= on View =============
+table.on("xhr.dt", function () {
+  $("#returnError").addClass("d-none");
 });
 
+// ============= on Error =============
 table.on("error.dt", function () {
-  $("#returnLoading").addClass("d-none");
-  $("#returnEmpty").addClass("d-none");
   $("#returnError").removeClass("d-none");
 });
 
 // ======================= Filters =======================
-let filterTimer;
-function reloadTable() {
-  clearTimeout(filterTimer);
-  filterTimer = setTimeout(() => table.ajax.reload(), 300);
-}
+const reloadTable = createReload(table);
 $("#searchInput").on("input", reloadTable);
-$("#categoryFilter, #reasonFilter").on("change", reloadTable);
-
-$("#resetFilters").on("click", function () {
-  $("#searchInput, #categoryFilter, #reasonFilter").val("");
-  table.ajax.reload();
-});
+$("#categoryFilter, #branchFilter, #reasonFilter").on("change", reloadTable);
 
 // ======================= Modal =======================
 const returnModalEl = document.getElementById("returnModal");
 const returnForm = $("#returnForm");
 
-// open automatically for /returnAsset?assetId=5
+// ============= Auto Open Modal (/returnAsset?assetId=5) =============
 if (returnForm.find("select[name=assetId]").val()) {
   bootstrap.Modal.getOrCreateInstance(returnModalEl).show();
 }
@@ -80,9 +69,7 @@ returnForm.on("submit", async (event) => {
 
   try {
     const data = Object.fromEntries(new FormData(event.currentTarget));
-
-    btn.html('<div class="spinner-border spinner-border-sm" role="status"><span class="visually-hidden"></span></div>');
-    btn.prop("disabled", true);
+    setButtonLoading(btn, true, "Return");
 
     const response = await fetch("/returnAssetApi", {
       method: "POST",
@@ -104,7 +91,7 @@ returnForm.on("submit", async (event) => {
     } else {
       showToast(res_data.message || "Asset returned", "success");
 
-      // no longer issued, so remove it from the dropdown
+      // Remove process assets
       returnForm.find("select[name=assetId] option[value='" + data.assetId + "']").remove();
 
       bootstrap.Modal.getOrCreateInstance(returnModalEl).hide();
@@ -113,12 +100,11 @@ returnForm.on("submit", async (event) => {
   } catch (error) {
     showToast(error.message || "Something went wrong", "danger");
   } finally {
-    btn.html("Return");
-    btn.prop("disabled", false);
+    setButtonLoading(btn, false, "Return");
   }
 });
 
-// reset the form each time the modal closes (date goes back to today)
+// ==== When Close Model get Today and set Today============
 returnModalEl.addEventListener("hidden.bs.modal", function () {
   const today = returnForm.find("input[name=returnDate]").attr("max");
   returnForm[0].reset();

@@ -1,78 +1,61 @@
 extends ../../layout/userLayout
-
+include ../../components/informationBox.jade
 block title
     title Employee | Asset Management
 
 block userContent
     div.pt-3
-        div.d-flex.justify-content-between
-            .d-flex.align-items-center
-                a.text-dark.me-3.fs-3(href='/employees', title='Back')
-                    i.fas.fa-arrow-left
-                h2 Employee Details
-            
-        hr
+        //-=========== Header =================
+        .d-flex.align-items-center.mb-4.mt-4
+           a.text-dark.me-3.fs-3(href='/employees', title='Back')
+             i.fas.fa-arrow-left
+           h3 Employee Profile
+
+
+        hr.app-border-primary
 
         .row
-            //- Left: profile card
+            //-============= Profile Card =============
             .col-lg-4.mb-4
-                .card.shadow-sm.border-0.text-center
+                .card.app-bg-secondary.app-border-primary
                     .card-body.py-4
-                        .rounded-circle.bg-primary.text-white.d-inline-flex.align-items-center.justify-content-center.mb-3(style='width:90px;height:90px;font-size:36px')
-                            = employee.name.charAt(0).toUpperCase()
-                        h4.mb-1= employee.name
-                        p.text-muted.mb-2= employee.designation
-                        if employee.status === 'Active'
-                            span.badge.bg-success.px-3.py-2 Active
-                        else
-                            span.badge.bg-secondary.px-3.py-2 Inactive
-                        div.mt-3
-                            a.btn.btn-outline-primary.btn-sm(href=`/employees/edit/${employee.id}`)
-                                i.fas.fa-edit.me-1
-                                | Edit Profile
+                        .d-flex.align-items-center
+                            .avatar.app-bg-tertiary.app-border-primary.app-text-primary.d-flex.align-items-center.justify-content-center.rounded.flex-shrink-0.me-3
+                                = employee.name.charAt(0).toUpperCase()
+                            .flex-grow-1
+                                h4.mb-1.app-text-primary= employee.name
+                                p.app-text-secondary.mb-2= employee.designation
+                                if employee.status === 'Active'
+                                    span.badge.bg-success.px-3.py-2 Active
+                                else
+                                    span.badge.bg-secondary.px-3.py-2 Inactive
+                                div.mt-3
+                                    a.btn.btn-outline-primary.btn-sm(href=`/employees/edit/${employee.id}`)
+                                        i.fas.fa-edit.me-1
+                                        | Edit Profile
+            
                     ul.list-group.list-group-flush.text-start
-                        li.list-group-item
-                            i.fas.fa-id-badge.text-primary.me-2
+                        li.list-group-item.app-bg-secondary.app-text-primary
+                            i.fas.fa-id-badge.app-text-tertiary.me-2
                             = employee.employeeId
-                        li.list-group-item
-                            i.fas.fa-envelope.text-primary.me-2
-                            a.text-decoration-none(href=`mailto:${employee.email}`)= employee.email
-                        li.list-group-item
-                            i.fas.fa-phone.text-primary.me-2
-                            a.text-decoration-none(href=`tel:${employee.phone}`)= employee.phone
-
-            //- Right: details
+                        li.list-group-item.app-bg-secondary.app-text-primary
+                            i.fas.fa-envelope.app-text-tertiary.me-2
+                            a.text-decoration-none.app-text-primary(href=`mailto:${employee.email}`)= employee.email
+                        li.list-group-item.app-bg-secondary.app-text-primary
+                            i.fas.fa-phone.app-text-tertiary.me-2
+                            a.text-decoration-none.app-text-primary(href=`tel:${employee.phone}`)= employee.phone
+           
+            //-================= Work Information ===================
             .col-lg-8
-                .card.shadow-sm.border-0.mb-4
-                    .card-header.bg-white.fw-bold
-                        i.fas.fa-briefcase.me-2.text-primary
-                        | Work Information
-                    .card-body
-                        table.table.table-borderless.mb-0
-                            tbody
-                                tr
-                                    th.text-muted(style='width:35%') Department
-                                    td= employee.department
-                                tr
-                                    th.text-muted Designation
-                                    td= employee.designation
-                                tr
-                                    th.text-muted Branch
-                                    td= employee.branch
-                                tr
-                                    th.text-muted Status
-                                    td= employee.status
-
-                .card.shadow-sm.border-0
-                    .card-header.bg-white.fw-bold
-                        i.fas.fa-clock.me-2.text-primary
-                        | Record Information
-                    .card-body
-                        table.table.table-borderless.mb-0
-                            tbody
-                                tr
-                                    th.text-muted(style='width:35%') Created On
-                                    td= new Date(employee.createdAt).toLocaleDateString('en-IN')
-                                tr
-                                    th.text-muted Last Updated
-                                    td= new Date(employee.updatedAt).toLocaleDateString('en-IN')
+             +informationBox('fas fa-briefcase', 'Work Information', [
+               { field: 'Department',  value: employee.department },
+               { field: 'Designation', value: employee.designation },
+               { field: 'Branch',      value: employee.branch },
+               { field: 'Status',      value: employee.status }
+             ])
+             //-============= Record Information ====================  
+            
+             +informationBox('fas fa-clock', 'Record Information', [
+               { field: 'Created On',   value: new Date(employee.createdAt).toLocaleDateString('en-IN') },
+               { field: 'Last Updated', value: new Date(employee.updatedAt).toLocaleDateString('en-IN') }
+             ])

@@ -1,57 +1,101 @@
 extends ../../layout/userLayout
+include ../../components/formInput
+include ../../components/formSelect
+include ../../components/formTextarea
+include ../../components/branchSelect
 
 block title
   title Stock View | Asset Management
 
 block userContent
+  - const categoryOptions = (categories || []).map(function (c) { return { value: c.id, label: c.name } })
+  
+  //- ========== Header =============
   div.pt-3
-    div.d-flex.justify-content-between
-      h2 Stock View
-      a(href="/issueAsset").btn.btn-primary
-        i.fa-solid.fa-share
-        |  Issue Asset
+    .d-flex.flex-column.flex-sm-row.justify-content-sm-between.align-items-start.align-items-sm-center.mb-4
+      div
+        h2.fw-bold.mb-1.app-text-primary Stock View
+        p.app-text-tertiary.small.mb-0 View available stock by category and branch, and issue assets to employees
+      
     hr
 
+   
     .row.g-2.mb-3
+      //-========= Search Filter ========
       .col-lg-4.col-md-12
-        input#searchInput.form-control(type="text", placeholder="Search by tag, serial no, make or model")
-      .col-lg-3.col-md-6
-        select#categoryFilter.form-select
-          option(value="") All Categories
-          each c in categories
-            option(value=c.id)= c.name
-      .col-lg-3.col-md-6
-        select#branchFilter.form-select
-          option(value="") All Branches
-          each b in branches
-            option(value=b)= b
-      .col-lg-2.col-md-12
-        button#resetFilters.btn.btn-light.border.w-100(type="button") Reset
+        +formInput({
+          id: 'searchInput',
+          name: 'search',
+          type: 'search',
+          label:"Search",
+          placeholder: 'Search by tag, serial no, make or model'
+        })
 
-    //- Totals by branch (filled by JS)
+      //============Category Filter ========
+      .col-lg-3.col-md-6
+        +formSelect({
+          id: 'categoryFilter',
+          name: 'category',
+          label:"Category",
+          options: categoryOptions,
+          placeholder: 'All Categories'
+        })
+
+      //-=========== Branch Filter ========
+      //- .col-lg-3.col-md-6
+      //-   +formSelect({
+      //-     id: 'branchFilter',
+      //-     name: 'branch',
+      //-     options: branches,
+      //-     "label":"Branch",
+      //-     placeholder: 'All Branches'
+      //-   })
+      .col-lg-3.col-md-6 
+                +branchSelect({ 
+                  placeholder: 'Select branch' ,
+                  id: 'branchFilter',
+               })
+      
+      //- ======Reset Filters===========
+      .col-lg-1.col-md-12.d-flex.flex-column.gap-1
+        span Reset
+        button#resetFilters.btn.btn-light.border.w-100(type='button', title='Reset')
+          i.fa-solid.fa-rotate-left  
+
+    hr  
+
+    //-=============Totals by branch ===============
     #branchTotals.row.g-2.mb-3
 
-    #stockLoading.text-center.py-4.d-none
-      .spinner-border.spinner-border-sm(role="status")
-      span.ms-2 Loading stock...
-    #stockEmpty.alert.alert-light.border.text-center.d-none No assets in stock
-    #stockError.alert.alert-danger.text-center.d-none Failed to load stock. Please try again.
-
-    .table-responsive
-      table#stockTable.table.table-bordered.table-hover.align-middle.w-100
-        thead.table-light
-          tr
-            th Asset Tag
-            th Serial No
-            th Category
-            th Make
-            th Model
-            th Branch
-            th.text-end Price
-        tfoot.table-light
-          tr.fw-bold
-            th#footLabel(colspan="6") Total
-            th#footValue.text-end 0.00
+    //- ======== Stock Table ========
+    .card.app-bg-secondary.app-border-primary
+      .card-body
+        .table-responsive
+          table#stockTable.table.table-hover.align-middle.app-table.w-100
+            thead
+              tr
+                th Asset Tag
+                th Serial No
+                th Category
+                th Make
+                th Model
+                th Branch
+                th.text-end Price
+            tbody#stackTableBody
+              //- Error
+              tr#stackError.d-none
+                td.text-center.py-4(colspan='8')
+                  i.fa-solid.fa-triangle-exclamation.fa-2x.text-danger
+                  p.mt-2.mb-0.text-danger Unable to load assets.    
+            tfoot
+              tr.fw-bold
+                th#footLabel(colspan='6') Total
+                th#footValue.text-end 0.00
 
 block scripts
-  script(src="/js/stock.js")
+  script(src='/js/stock.js')
+  script.
+    $("#resetFilters").on("click", function () {
+       $("#searchInput, #categoryFilter, #branchFilter").val("");
+       table.ajax.reload();
+    });

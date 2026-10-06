@@ -4,72 +4,87 @@ const { DataTypes } = require("sequelize")
 const Employee = sequelize.define(
     "Employee",
     {
+       // ========= Auto Fields ===========
         id: {
-          type: DataTypes.INTEGER,
-          primaryKey: true,
-          autoIncrement: true
+            type: DataTypes.INTEGER,
+            primaryKey: true,
+            autoIncrement: true
         },
+
+        // ========= Required Fields ===========
         employeeId: {
-          type: DataTypes.STRING,
-          allowNull: false,
-          unique: true,
-          validate:{
-            notEmpty:true
-          }
+            type: DataTypes.STRING,
+            allowNull: false,
+            unique: true,
+            validate: {
+                notEmpty: true
+            }
         },
+
         name: {
-          type: DataTypes.STRING,
-          allowNull: false,
-          validate:{
-            notEmpty:true
-          }
+            type: DataTypes.STRING,
+            allowNull: false,
+            validate: {
+                notEmpty: true
+            }
         },
+
         email: {
-          type: DataTypes.STRING,
-          allowNull: false,
-          validate: { isEmail: true }
+            type: DataTypes.STRING,
+            allowNull: false,
+            validate: {
+                isEmail: true
+            }
         },
+
         phone: {
-         type: DataTypes.STRING,
-         allowNull: false,
-          validate:{
-            notEmpty:true
-          }
+            type: DataTypes.STRING,
+            allowNull: false,
+            validate: {
+                notEmpty: true
+            }
         },
+
         department: {
-          type: DataTypes.STRING,
-          allowNull: false,
-          validate:{
-            notEmpty:true
-          }
+            type: DataTypes.STRING,
+            allowNull: false,
+            validate: {
+                notEmpty: true
+            }
         },
+
         designation: {
-          type: DataTypes.STRING,
-          allowNull: false,
-          validate:{
-            notEmpty:true,
-          }
+            type: DataTypes.STRING,
+            allowNull: false,
+            validate: {
+                notEmpty: true
+            }
         },
+
         branch: {
-          type: DataTypes.STRING,
-          allowNull: false,
-          validate:{
-            notEmpty:true
-          }
+            type: DataTypes.STRING,
+            allowNull: false,
+            validate: {
+                notEmpty: true
+            }
         },
-        status: {
-          type: DataTypes.ENUM("Active", "Inactive"),
-          defaultValue: "Active"
-        },
+
+        // user who created this record
         c_by: {
-         type: DataTypes.INTEGER,
-         allowNull: false,
-         references: {
-             model: "users",        
-             key: "id"
-         },
-         onUpdate: "CASCADE",
-         onDelete: "RESTRICT"     
+            type: DataTypes.INTEGER,
+            allowNull: false,
+            references: {
+                model: "users",
+                key: "id"
+            },
+            onUpdate: "CASCADE",
+            onDelete: "RESTRICT"
+        },
+
+        // ========= Optional Fields ===========
+        status: {
+            type: DataTypes.ENUM("Active", "Inactive"),
+            defaultValue: "Active"
         }
     },
     {

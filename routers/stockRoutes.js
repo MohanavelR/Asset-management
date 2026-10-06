@@ -5,7 +5,10 @@ const { stockView, stockApi } = require("../controllers/stock");
 
 const router = express.Router();
 
-router.get("/stocks",pageAuthMiddleware, stockView);        // page (written next)
-router.get("/stockApi",apiAuthMiddleware, stockApi); 
+// ========= Page Routes ===========
+router.get("/stocks", pageAuthMiddleware, stockView);
+
+// ========= API Routes ===========
+router.get("/stockApi", apiAuthMiddleware, stockApi);
 
 module.exports = router;

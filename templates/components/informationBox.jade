@@ -1,0 +1,28 @@
+mixin informationBox(icon, title, data = [], opts = {})
+  - const cardCls = opts.cls || 'mb-4'
+  - const labelWidth = opts.labelWidth || '35%'
+  .card.app-bg-secondary.app-border-primary(class=cardCls)
+    .card-header.app-bg-tertiary.app-border-primary.app-text-primary.fw-medium
+      if icon
+        i.me-2.app-text-tertiary(class=icon)
+      span= title
+    .card-body
+      if data.length === 0 && opts.empty
+        p.app-text-secondary.mb-0= opts.empty
+      else
+        table.table.table-borderless.app-table.mb-0
+          tbody
+            each item in data
+              - const isEmpty = (item.value === undefined || item.value === null || item.value === '')
+              tr
+                th.app-text-secondary.fw-medium(style='width:' + labelWidth)= item.field
+              
+                td.app-text-primary(style=item.pre ? 'white-space: pre-line' : null)
+                  if isEmpty
+                    | -
+                  else if item.badge
+                    span.badge(class='text-bg-' + item.badge)= item.value
+                  else if item.href
+                    a.text-decoration-none.app-text-primary(href=item.href)= item.value
+                  else
+                    = item.value

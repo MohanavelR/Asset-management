@@ -1,28 +1,29 @@
 extends ./base
 
 block content
-  nav.navbar.bg-secondary.position-sticky.top-0.z-3
+  //-================NavBar=================== 
+  nav.navbar.app-bg-secondary.position-sticky.top-0.z-3.border-bottom
     div.container-fluid
       div.d-flex.align-items-center.justify-content-between.gap-2.w-100
         div 
-          button.btn.btn-outline-light.d-md-none(type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebarMenu" aria-controls="sidebarMenu" aria-label="Toggle menu") ☰
-          a.navbar-brand.d-none.d-md-block.text-white.fs-2(href="/") #{appName}
+          button.btn.app-text-primary.d-md-none(type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebarMenu" aria-controls="sidebarMenu" aria-label="Toggle menu") ☰
+          a.navbar-brand.d-none.d-md-block.app-text-primary.fs-2(href="/") #{appName}
         div.dropdown
-        div.d-flex.gap-2.align-items-center.dropdown-toggle(
+        div.d-flex.gap-2.align-items-center.dropdown-toggle.app-bg-tertiary.px-3.py-1.app-border-tertiary.rounded-pill(
             data-bs-toggle="dropdown"
             aria-expanded="false"
             role="button"
         )
             div.d-flex.flex-column
-                span.text-white #{user.userName}
-        ul.dropdown-menu.dropdown-menu-end
+                span.app-text-seconadry.fw-bold #{user.userName}
+        ul.dropdown-menu.dropdown-menu-end.app-bg-tertiary.app-border-tertiary
             li
-                button.text-center.dropdown-item(type="button")#logout-btn logout
+                button.text-center.dropdown-item.py-0(type="button")#logout-btn logout
             
-
+  //-==================Aside Container=============================
   div.container-fluid
     div.row
-      aside#sidebarMenu.user-aside.position-fixed.offcanvas-md.offcanvas-start.col-8.col-sm-5.col-md-3.col-lg-2.bg-light.border-end.min-vh-md-100(tabindex="-1" aria-labelledby="sidebarLabel")
+      aside#sidebarMenu.user-aside.position-fixed.offcanvas-md.offcanvas-start.col-8.col-sm-5.col-md-3.col-lg-2.app-bg-secondary.border-end.min-vh-md-100(tabindex="-1" aria-labelledby="sidebarLabel")
         div.offcanvas-header.border-bottom
           h5#sidebarLabel.offcanvas-title #{appName}
           button.btn-close(type="button" data-bs-dismiss="offcanvas" data-bs-target="#sidebarMenu" aria-label="Close")

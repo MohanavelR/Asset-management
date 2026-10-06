@@ -1,77 +1,141 @@
 extends ../../layout/userLayout
+include ../../components/branchSelect
+include ../../components/formInput
+include ../../components/formSelect
+include ../../components/formTextarea
 
 block title
     title Issue Assets | Asset Management
 
 block userContent
+   
+    - const categoryOptions = (categories || []).map(function (c) { return { value: c.id, label: c.name } })
+    - const assetOptions = (assets || []).map(function (a) { return { value: String(a.id), label: a.assetTag + ' - ' + a.make + ' ' + a.model + ' (' + a.branch + ')' } })
+    - const employeeOptions = (employees || []).map(function (e) { return { value: String(e.id), label: e.employeeId + ' - ' + e.name + ' (' + e.department + ')' } })
+
     div.pt-3
-        div.d-flex.justify-content-between
-            h2 Issue Assets
+        //- ========== Header =============
+        .d-flex.flex-column.flex-sm-row.justify-content-sm-between.align-items-start.align-items-sm-center.mb-4
             div
-                button.btn.btn-primary(type="button", data-bs-toggle="modal", data-bs-target="#issueModal")
+                h2.fw-bold.mb-1.app-text-primary Issue Assets
+                p.app-text-tertiary.small.mb-0 Issue assets to employees and view issued asset records
+            div.mt-3.mt-sm-0
+                button.btn.btn-primary(type='button', data-bs-toggle='modal', data-bs-target='#issueModal')
                     i.fa-solid.fa-plus
                     |  Issue Asset
         hr
-
-        //- Filters
+        
         .row.g-2.mb-3
-            .col-lg-6.col-md-12
-                input#searchInput.form-control(type="text", placeholder="Search by tag, serial no, make, model or employee")
-            .col-lg-4.col-md-8
-                select#categoryFilter.form-select
-                    option(value="") All Categories
-                    each c in categories
-                        option(value=c.id)= c.name
-            .col-lg-2.col-md-4
-                button#resetFilters.btn.btn-light.border.w-100(type="button") Reset
+            //-============ Search Filter ========
+            .col-lg-4.col-md-12
+                +formInput({
+                    id: 'searchInput',
+                    label: 'Search',
+                    name: 'search',
+                    type: 'search',
+                    placeholder: 'Tag, serial no, make, model or employee'
+                })
 
-        #issueLoading.text-center.py-4.d-none
-            .spinner-border.spinner-border-sm(role="status")
-            span.ms-2 Loading...
-        #issueEmpty.alert.alert-light.border.text-center.d-none No assets are currently issued
-        #issueError.alert.alert-danger.text-center.d-none Failed to load records. Please try again.
+            //-============== Category Filter ========
+            .col-lg-3.col-md-6
+                +formSelect({
+                    id: 'categoryFilter',
+                    label: 'Category',
+                    name: 'category',
+                    options: categoryOptions,
+                    placeholder: 'All Categories'
+                })
 
-        .table-responsive
-            table#issueTable.table.table-bordered.table-hover.align-middle.w-100
-                thead.table-light
-                    tr
-                        th Asset Tag
-                        th Asset
-                        th Employee
-                        th Issue Date
-                        th Remarks
+            //-================== Branch Filter ========
+            .col-lg-3.col-md-6
+                
+                +branchSelect({ 
+                  placeholder: 'Select branch' ,
+                  id: 'branchFilter',
+               })
 
-    //- Issue modal
-    #issueModal.modal.fade(tabindex="-1", aria-hidden="true")
+            //- ======== Reset Filters ========
+            .col-lg-2.col-md-12.d-flex.flex-column.gap-1
+                label.form-label.mb-0 Reset
+                button#resetFilters.btn.btn-light.border.w-100(type='button', title='Reset')
+                    i.fa-solid.fa-rotate-left
+        hr
+        //- ======== Issue Table ========
+        .card.app-bg-secondary.app-border-primary
+            .card-body
+                .table-responsive
+                    table#issueTable.table.table-hover.align-middle.app-table.w-100
+                        thead
+                            tr
+                                th Asset Tag
+                                th Asset
+                                th Employee
+                                th Issue Date
+                                th Remarks
+                        tbody#issueTableBody
+                            //- Error
+                            tr#issueError.d-none
+                                td.text-center.py-4(colspan='5')
+                                    i.fa-solid.fa-triangle-exclamation.fa-2x.text-danger
+                                    p.mt-2.mb-0.text-danger Unable to load issued assets.
+
+    //- ======== Issue Modal ========
+    #issueModal.modal.fade(tabindex='-1', aria-hidden='true')
         .modal-dialog.modal-lg
             .modal-content
                 form#issueForm
                     .modal-header
                         h5.modal-title Issue Asset
-                        button.btn-close(type="button", data-bs-dismiss="modal")
+                        button.btn-close(type='button', data-bs-dismiss='modal')
                     .modal-body
                         .row.g-3
-                            .col-md-6
-                                label.form-label Asset (In Stock)
-                                select.form-select(name="assetId")
-                                    option(value="") Select asset
-                                    each a in assets
-                                        option(value=a.id, selected=String(a.id) === String(selectedAssetId)) #{a.assetTag} - #{a.make} #{a.model} (#{a.branch})
-                            .col-md-6
-                                label.form-label Employee
-                                select.form-select(name="employeeId")
-                                    option(value="") Select employee
-                                    each e in employees
-                                        option(value=e.id) #{e.employeeId} - #{e.name} (#{e.department})
-                            .col-md-6
-                                label.form-label Issue Date
-                                input.form-control(type="date", name="issuedDate", value=today, max=today)
-                            .col-12
-                                label.form-label Remarks
-                                textarea.form-control(name="remarks", rows="2")
+                            //- ====== Asset ======
+                            .col-md-6.form-group.required-field
+                                +formSelect({
+                                    label: 'Asset (In Stock)',
+                                    name: 'assetId',
+                                    options: assetOptions,
+                                    selected: selectedAssetId ? String(selectedAssetId) : '',
+                                    required: true,
+                                    placeholder: 'Select asset'
+                                })
+
+                            //- ====== Employee ======
+                            .col-md-6.form-group.required-field
+                                +formSelect({
+                                    label: 'Employee',
+                                    name: 'employeeId',
+                                    options: employeeOptions,
+                                    required: true,
+                                    placeholder: 'Select employee'
+                                })
+
+                            //- ====== Issue Date ======
+                            .col-md-6.form-group.required-field
+                                +formInput({
+                                    label: 'Issue Date',
+                                    name: 'issuedDate',
+                                    type: 'date',
+                                    value: today,
+                                    required: true
+                                })(max=today)
+
+                            //- ====== Remarks ======
+                            .col-12.form-group
+                                +formTextarea({
+                                    label: 'Remarks',
+                                    name: 'remarks',
+                                    rows: 2,
+                                    placeholder: 'Optional'
+                                })
                     .modal-footer
-                        button.btn.btn-light.border(type="button", data-bs-dismiss="modal") Cancel
-                        button.btn.btn-primary#issue-save-btn(type="submit") Issue
+                        button.btn.btn-light.border(type='button', data-bs-dismiss='modal') Cancel
+                        button#issue-save-btn.btn.btn-primary(type='submit') Issue
 
 block scripts
-    script(src="/js/issue.js")
+    script(src='/js/issue.js')
+    script.
+        $("#resetFilters").on("click", function () {
+            $("#searchInput, #categoryFilter, #branchFilter").val("");
+            table.ajax.reload();
+        });

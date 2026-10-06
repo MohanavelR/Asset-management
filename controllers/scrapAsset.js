@@ -1,22 +1,15 @@
 const dayjs = require("dayjs");
 const { Op } = require("sequelize");
-const Asset = require("../models/asset");
-const Employee = require("../models/employee");
 const logger = require("../helpers/logger");
-const AssetCategory = require("../models/assetCategory");
-const AssetIssue = require("../models/issueAsset");
+const {AssetCategory,Employee,Asset} =require("../models/index")
 const { sequelize } = require("../config/db");
 const { logHistory } = require("../helpers/logHistory");
+const { SCRAP_REASONS } = require("../config/contants");
 
-const { SCRAP_REASONS } = Asset;
 
 const SCRAPPABLE = ["In Stock", "Returned"];
-const httpError = (statusCode, message) => {
-  const e = new Error(message);
-  e.statusCode = statusCode;
-  return e;
-};
-// ---------- page ----------
+
+// ========= Scrap Asset View ===========
 exports.scrapAssetView = async function (req, res, next) {
   try {
     const [assets, categories] = await Promise.all([
@@ -38,20 +31,27 @@ exports.scrapAssetView = async function (req, res, next) {
     });
   } catch (error) {
     logger.error(`Scrap view error: ${error}`);
-    next(error);
+    res.render("error", { error });
   }
 };
 
-// ---------- table: already scrapped (unscoped bypasses the default scope) ----------
+// ========= Scrap List API ===========
 exports.scrapListApi = async function (req, res, next) {
   try {
     const draw = parseInt(req.query.draw) || 1;
     const start = Math.max(parseInt(req.query.start) || 0, 0);
     const length = Math.min(Math.max(parseInt(req.query.length) || 10, 1), 100);
-    const { query, category } = req.query;
+    const { query, category, branch } = req.query;
 
     const where = { status: "Scrapped" };
-    if (category && Number.isInteger(Number(category))) where.category = Number(category);
+
+    if (category && Number.isInteger(Number(category))) {
+      where.category = Number(category);
+    }
+
+    if (branch) {
+      where["$asset.branch$"] = branch;
+    }
 
     if (typeof query === "string" && query.trim()) {
       const q = `%${query.trim()}%`;
@@ -78,25 +78,32 @@ exports.scrapListApi = async function (req, res, next) {
 
     return res.status(200).json({ draw, recordsTotal, recordsFiltered: count, data: rows });
   } catch (error) {
-    next(error);
+    return res.status(500).json({ message: error.message });
   }
 };
 
-// ---------- scrap (unchanged) ----------
+// ========= Scrap Asset ===========
 exports.scrapAsset = async function (req, res, next) {
   try {
     const { assetId, reason, scrappedDate, remarks } = req.body;
 
     await sequelize.transaction(async (t) => {
       const asset = await Asset.findByPk(assetId, { transaction: t, lock: t.LOCK.UPDATE });
-      if (!asset) throw httpError(404, "Asset not found");
+
+      if (!asset) {
+        throw new Error("Asset not found");
+      }
+
       if (!SCRAPPABLE.includes(asset.status)) {
-        throw httpError(400, "Only In Stock or Repair assets can be scrapped (current: " + asset.status + ")");
+        throw new Error("Only In Stock or Repair assets can be scrapped (current: " + asset.status + ")");
       }
+
       if (scrappedDate < asset.acqDate) {
-        throw httpError(400, "Scrapped date cannot be before the purchase date");
+        throw new Error("Scrapped date cannot be before the purchase date");
       }
-   const fromStatus = asset.status;
+
+      const fromStatus = asset.status;
+
       await asset.update(
         {
           status: "Scrapped",
@@ -108,50 +115,59 @@ exports.scrapAsset = async function (req, res, next) {
         },
         { transaction: t }
       );
-     
-await logHistory({
-  assetId: asset.id,
-  action: "Scrapped",
-  actionDate: scrappedDate,
-  fromStatus,
-  toStatus: "Scrapped",
-  reason,
-  remarks,
-  userId: req.user.id,
-}, t);
+
+      await logHistory({
+        assetId: asset.id,
+        action: "Scrapped",
+        actionDate: scrappedDate,
+        fromStatus,
+        toStatus: "Scrapped",
+        reason,
+        remarks,
+        userId: req.user.id,
+      }, t);
     });
 
     return res.status(200).json({ success: true, message: "Asset scrapped successfully" });
   } catch (error) {
-    next(error);
+    return res.status(400).json({ success: false, message: error.message });
   }
 };
 
-// ---------- re-stock: Repair -> In Stock ----------
+// ========= Restock Asset ===========
 exports.restockAsset = async function (req, res, next) {
   try {
     const id = Number(req.body.assetId);
-    if (!Number.isInteger(id) || id < 1) throw httpError(400, "Please select an asset");
+
+    if (!Number.isInteger(id) || id < 1) {
+      throw new Error("Please select an asset");
+    }
 
     await sequelize.transaction(async (t) => {
       const asset = await Asset.findByPk(id, { transaction: t, lock: t.LOCK.UPDATE });
-      if (!asset) throw httpError(404, "Asset not found");
-      if (asset.status !== "Returned") {
-        throw httpError(400, "Only assets in Repair can be re-stocked (current: " + asset.status + ")");
+
+      if (!asset) {
+        throw new Error("Asset not found");
       }
+
+      if (asset.status !== "Returned") {
+        throw new Error("Only assets in Repair can be re-stocked (current: " + asset.status + ")");
+      }
+
       await asset.update({ status: "In Stock", assignedTo: null }, { transaction: t });
-     await logHistory({
-  assetId: asset.id,
-  action: "Re-stocked",
-  actionDate: dayjs().format("YYYY-MM-DD"),
-  fromStatus: "Returned",
-  toStatus: "In Stock",
-  userId: req.user.id,
-}, t);
+
+      await logHistory({
+        assetId: asset.id,
+        action: "Re-stocked",
+        actionDate: dayjs().format("YYYY-MM-DD"),
+        fromStatus: "Returned",
+        toStatus: "In Stock",
+        userId: req.user.id,
+      }, t);
     });
 
     return res.status(200).json({ success: true, message: "Asset is back In Stock" });
   } catch (error) {
-    next(error);
+    return res.status(400).json({ success: false, message: error.message });
   }
 };

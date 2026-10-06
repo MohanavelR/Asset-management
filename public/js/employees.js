@@ -5,34 +5,13 @@ const table=$("#employeeTable").DataTable({
    dom:"lrtip",
    pageLength:10,
    lengthMenu:[10,25,50,100],
-   language: {
-    processing: `
-            <div class="py-3 text-center">
-                <div class="spinner-border text-primary" role="status"></div>
-                <div class="mt-2 text-muted">Loading employees...</div>
-            </div>
-        `,
-
-        emptyTable: `
-            <div class="py-4 text-center text-muted">
-                <i class="fa-solid fa-users-slash fs-3 mb-2"></i>
-                <div>No employees found</div>
-            </div>
-        `,
-
-        zeroRecords: `
-            <div class="py-4 text-center text-muted">
-                <i class="fa-solid fa-magnifying-glass fs-3 mb-2"></i>
-                <div>No matching employees found</div>
-            </div>
-        `,
-
-   },
+   language: dataTableMessages( "employees", "fa-solid fa-users-slash" ),
    ajax:{
     url:"/employeesApi",
     data:function(d){
      d.query = ($("#searchInput").val() || "").trim();  
-    d.status = $("#statusFilter").val() || "";    
+     d.status = $("#statusFilter").val() || ""; 
+    d.branch = $("#branchFilter").val() || "";   
     },
     dataSrc:function(res){
       return res.data
@@ -47,13 +26,7 @@ const table=$("#employeeTable").DataTable({
     { data: "designation" },
     { data: "branch" },
     {data:"status",
-     render:function(status){
-        const isActive=status==="Active" ? "success"
-                        : "secondary";
-        return ` <span class="badge text-bg-${isActive}">
-                        ${status}
-                    </span>`
-     }   
+     render:renderStatus 
     },
     {
     data: "id",
@@ -83,41 +56,36 @@ const table=$("#employeeTable").DataTable({
                 <i class="fa-solid fa-trash"></i>
             </button>
         </div>
-    `
+    `    
 }
-
    ],
    order:[]
 })
 
-// onview
+// =============onview==================
 table.on("xhr.dt", function (event, settings, json) {
       $("#employeeError").addClass("d-none");
 })
-// onLoading 
+
+// =================onLoading============
 table.on("preXhr.dt", function () {
       $("#employeeError").addClass("d-none");
 
 });
-// Error
+
+// ============Error===================
 table.on("error.dt", function () {
   $("#employeeError").removeClass("d-none");
 });
 
-let filterTimer;
-function reloadTable() {
 
-    clearTimeout(filterTimer);
+// ================ Reload Table and Manage debounce ================
 
-    filterTimer = setTimeout(function () {
+const reloadTable = createReload(table); 
 
-        table.ajax.reload();
 
-    }, 300);    
-}
 $("#searchInput").on("input", function () {
     reloadTable();
 });
-$("#statusFilter").on("change", function () {
-    reloadTable();
-});
+
+$("#statusFilter, #branchFilter").on("change", reloadTable);

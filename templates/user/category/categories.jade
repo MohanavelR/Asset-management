@@ -1,21 +1,37 @@
 extends ../../layout/userLayout
+include ../../components/formInput
+include ../../components/formSelect
+include ../../components/formTextarea
+
 
 block title
     title Categories | Asset Management
 
 block userContent
     div.pt-3
-        div.d-flex.justify-content-between
-            h2 Categories
+        .d-flex.flex-column.flex-sm-row.justify-content-sm-between.align-items-start.justify-content-start.align-items-sm-center.mb-4
             div
-                button.btn.btn-primary#addCategoryBtn(type='button' onclick="addCategory()" )
+                h2.fw-bold.mb-1.app-text-primary Categories
+                p.app-text-tertiary.small.mb-0 Manage asset categories, create new categories, and update existing category details
+            div.mt-3.mt-md-0
+                button#addCategoryBtn.btn.btn-primary(type='button', onclick='addCategory()')
                     i.fa-solid.fa-plus
                     |  Categories
         hr
+
+        //- ======== Search Filter ==========
         .row.mb-3
             .col-md-4
-                input#searchInput.form-control(type='text', placeholder='Search category...')
-        .card
+                +formInput({
+                    id: 'searchInput',
+                    name: 'search',
+                    placeholder: 'Search category...',
+                    label:"Search"
+                })
+        hr        
+
+        //- ========= Category Table ==========
+        .card.app-bg-secondary.app-border-primary
             .card-body
                 .table-responsive
                     table#categoryTable.table.table-striped.table-hover.w-100
@@ -25,60 +41,51 @@ block userContent
                                 th Name
                                 th Description
                                 th Created
-                                th.text-end Action 
+                                th.text-end Action
                         tbody#categoryTableBody
-                              //-Loading    
-                           tr#categoryLoading
-                              td.py-4.text-center(colspan=9)
-                                 .spinner-border.text-primary(role="status",aria-hidden="true")
-                           tr#categoryEmpty.d-none
-                              td.text-center.py-4(colspan="9")
-                                  i.fas.fa-list.fa-2x.text-muted
-                                  p.mt-2.mb-0.text-muted
-                                      | No categories found.
+                            //- Error
+                            tr#categoryError.d-none
+                                td.text-center.py-4(colspan='5')
+                                    i.fa-solid.fa-triangle-exclamation.fa-2x.text-danger
+                                    p.mt-2.mb-0.text-danger Unable to load categories.
 
-                                 //- Error
-                           tr#categoryError.d-none
-                              td.text-center.py-4(colspan="9")
-                                 i.fa-solid.fa-triangle-exclamation.fa-2x.text-danger
-                                 p.mt-2.mb-0.text-danger
-                                           | Unable to load categories.
-
- 
-        //- Category Form
+        //- ========= Category Form  ==========
         #categoryModal.modal.fade(tabindex='-1', aria-hidden='true')
             .modal-dialog.modal-dialog-centered
                 .modal-content
                     form#categoryForm
                         .modal-header
-                            h5.modal-title#categoryModalTitle Add Category
+                            h5#categoryModalTitle.modal-title Add Category
                             button.btn-close(type='button', data-bs-dismiss='modal')
+
                         .modal-body
-                            .mb-3
-                                label.form-label(for='categoryName') Category Name
-                                    span.text-danger  *
-                                input#categoryName.form-control(
-                                    type='text',
-                                    name='name',
-                                    placeholder='e.g. Laptop, Mobile Phone, Drill Machine',
-                                    minlength='2',
-                                    maxlength='100',
-                                    
-                                )
-                                span.text-danger#name-error.error-text
-                            .mb-3
-                                label.form-label(for='categoryDesc') Description
-                                textarea#categoryDesc.form-control(
-                                    name='desc',
-                                    rows='3',
-                                    placeholder='Optional'
-                                )
+                            //- ====== Name ======
+                            .mb-3.form-group.required-field
+                                +formInput({
+                                    id: 'categoryName',
+                                    label: 'Category Name',
+                                    name: 'name',
+                                    placeholder: 'e.g. Laptop, Mobile Phone, Drill Machine'
+                                })(minlength='2', maxlength='100')
+                                span#name-error.text-danger.error-text
+
+                            //- ====== Description ======
+                            .mb-3.form-group
+                                +formTextarea({
+                                    id: 'categoryDesc',
+                                    label: 'Description',
+                                    name: 'desc',
+                                    placeholder: 'Optional'
+                                })
+
                         .modal-footer
                             button.btn.btn-light(type='button', data-bs-dismiss='modal') Cancel
-                            button.btn.btn-primary#categorySubmitBtn(type='submit') Save
+                            button#categorySubmitBtn.btn.btn-primary(type='submit') Save
+
 block scripts
     script(src="/js/categories.js") 
     script.
+       //-============= Open Modal(Add Based)==============  
         function addCategory() {
             $('#categoryForm').removeAttr('data-id').removeData('id');
             console.log($('#categoryForm').data("id"))
@@ -86,6 +93,7 @@ block scripts
             $('#categoryModalTitle').text('Add Category');
             bootstrap.Modal.getOrCreateInstance($('#categoryModal')[0]).show();
         }
+        //- =========== Open Modal (Edit Based)==============
     
         function editCategory(category) {
             $('#categoryForm').attr('data-id', category.id).data('id', category.id);
@@ -94,6 +102,8 @@ block scripts
             $('#categoryModalTitle').text('Edit Category');
             bootstrap.Modal.getOrCreateInstance($('#categoryModal')[0]).show();
         }
+        
+        //- ========== Delete API==================
         async function deleteCategory(id) {
            if(!id){
                return

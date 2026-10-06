@@ -1,139 +1,56 @@
 extends ../../layout/userLayout
+include ../../components/informationBox
 
 block title
     title Asset Details | Asset Management
 
 block userContent
     - const a = asset
-    - const money = function (v) { return Number(v).toLocaleString('en-IN', { minimumFractionDigits: 2 }) }
-    - const dt = function (v) { return v ? new Date(v).toLocaleDateString('en-IN') : '-' }
+    - const money = function (v) { return (v === undefined || v === null || v === '') ? '' : Number(v).toLocaleString('en-IN', { minimumFractionDigits: 2 }) }
+    - const dt = function (v) { return v ? new Date(v).toLocaleDateString('en-IN') : '' }
     - const actionColors = { 'Issued': 'primary', 'Returned': 'success', 'Scrapped': 'danger' }
-    -
-        var history = [
-            { action: 'Issued', date: '2026-10-04', employee: 'EMP003 - Ravi', reason: '-', remarks: 'New joiner laptop' },
-            { action: 'Returned', date: '2026-09-20', employee: 'EMP001 - Kumar', reason: 'Upgrade', remarks: 'Replaced with new model' },
-            { action: 'Issued', date: '2026-06-15', employee: 'EMP001 - Kumar', reason: '-', remarks: '-' }
-        ]
-
     div.pt-3
-        div.d-flex.justify-content-between
+        .d-flex.justify-content-between.align-items-center
             .d-flex.align-items-center
-                a.text-dark.me-3.fs-3(href='/assets', title='Back')
+                a.app-text-primary.me-3.fs-3(href='/assets', title='Back')
                     i.fas.fa-arrow-left
-                h2 Asset Details
+                h2.app-text-primary.mb-0 Asset Details
             div
+                a.btn.btn-outline-primary.me-2(href='/assets/' + 'history/' + a.id)
+                    i.fas.fa-history.me-1
+                    | Show History
                 a.btn.btn-primary(href='/assets/' + a.id + '/edit')
                     i.fas.fa-edit.me-1
                     | Edit Asset
-        hr
+        hr.app-border-primary
 
         //- 3 column grid
         .row.g-4
             .col-lg-4.col-md-6
-                .card.shadow-sm.border-0.h-100
-                    .card-header.bg-white.fw-bold
-                        i.fas.fa-laptop.me-2.text-primary
-                        | Asset Information
-                    .card-body
-                        table.table.table-borderless.mb-0
-                            tbody
-                                tr
-                                    th.text-muted(style='width:40%') Asset Tag
-                                    td= a.assetTag
-                                tr
-                                    th.text-muted Serial No
-                                    td= a.serial_no
-                                tr
-                                    th.text-muted Category
-                                    td= a.categoryInfo ? a.categoryInfo.name : '-'
-                                tr
-                                    th.text-muted Make
-                                    td= a.make
-                                tr
-                                    th.text-muted Model
-                                    td= a.model
-                                tr
-                                    th.text-muted Branch
-                                    td= a.branch
-                                tr
-                                    th.text-muted Status
-                                    td= a.status
-                                tr
-                                    th.text-muted Specifications
-                                    td(style='white-space: pre-line')= a.specifications || '-'
+                +informationBox('fas fa-laptop', 'Asset Information', [
+                    { field: 'Asset Tag',      value: a.assetTag },
+                    { field: 'Serial No',      value: a.serial_no },
+                    { field: 'Category',       value: a.categoryInfo ? a.categoryInfo.name : '' },
+                    { field: 'Make',           value: a.make },
+                    { field: 'Model',          value: a.model },
+                    { field: 'Branch',         value: a.branch },
+                    { field: 'Status',         value: a.status },
+                    { field: 'Specifications', value: a.specifications, pre: true }
+                ], { cls: 'h-100 mb-0', labelWidth: '40%' })
 
             .col-lg-4.col-md-6
-                .card.shadow-sm.border-0.h-100
-                    .card-header.bg-white.fw-bold
-                        i.fas.fa-receipt.me-2.text-primary
-                        | Purchase & Warranty
-                    .card-body
-                        table.table.table-borderless.mb-0
-                            tbody
-                                tr
-                                    th.text-muted(style='width:40%') Vendor
-                                    td= a.vendor
-                                tr
-                                    th.text-muted Purchase Date
-                                    td= dt(a.acqDate)
-                                tr
-                                    th.text-muted Purchase Price
-                                    td= money(a.acqPrice)
-                                tr
-                                    th.text-muted Warranty Start
-                                    td= dt(a.warrantyStartDate)
-                                tr
-                                    th.text-muted Warranty End
-                                    td= dt(a.warrantyEndDate)
+                +informationBox('fas fa-receipt', 'Purchase & Warranty', [
+                    { field: 'Vendor',         value: a.vendor },
+                    { field: 'Purchase Date',  value: dt(a.acqDate) },
+                    { field: 'Purchase Price', value: money(a.acqPrice) },
+                    { field: 'Warranty Start', value: dt(a.warrantyStartDate) },
+                    { field: 'Warranty End',   value: dt(a.warrantyEndDate) }
+                ], { cls: 'h-100 mb-0', labelWidth: '40%' })
 
             .col-lg-4.col-md-12
-                .card.shadow-sm.border-0.h-100
-                    .card-header.bg-white.fw-bold
-                        i.fas.fa-user.me-2.text-primary
-                        | Current Holder
-                    .card-body
-                        if a.employee
-                            table.table.table-borderless.mb-0
-                                tbody
-                                    tr
-                                        th.text-muted(style='width:40%') Employee
-                                        td
-                                            a.text-decoration-none(href='/employee/view/' + a.employee.id)= a.employee.employeeId + ' - ' + a.employee.name
-                                    tr
-                                        th.text-muted Department
-                                        td= a.employee.department
-                                    tr
-                                        th.text-muted Designation
-                                        td= a.employee.designation
-                                    tr
-                                        th.text-muted Issued On
-                                        td= dt(a.issuedDate)
-                        else
-                            p.text-muted.mb-0 Not assigned to any employee
-
-        //- History (sample data for now)
-        .card.shadow-sm.border-0.mt-4
-            .card-header.bg-white.fw-bold
-                i.fas.fa-clock-rotate-left.me-2.text-primary
-                | History
-                span.badge.text-bg-light.border.ms-2 Sample
-            .table-responsive
-                table.table.table-hover.align-middle.mb-0
-                    thead.table-light
-                        tr
-                            th Date
-                            th Action
-                            th Employee
-                            th Reason
-                            th Remarks
-                    tbody
-                        each h in history
-                            tr
-                                td= dt(h.date)
-                                td
-                                    span.badge(class='text-bg-' + (actionColors[h.action] || 'secondary'))= h.action
-                                td= h.employee
-                                td= h.reason
-                                td= h.remarks
-
-        p.text-muted.small.mt-3 Created #{dt(a.createdAt)} | Last updated #{dt(a.updatedAt)}
+                +informationBox('fas fa-user', 'Current Holder', a.employee ? [
+                    { field: 'Employee',    value: a.employee.employeeId + ' - ' + a.employee.name, href: '/employee/view/' + a.employee.id },
+                    { field: 'Department',  value: a.employee.department },
+                    { field: 'Designation', value: a.employee.designation },
+                    { field: 'Issued On',   value: dt(a.issuedDate) }
+                ] : [], { cls: 'h-100 mb-0', labelWidth: '40%', empty: 'Not assigned to any employee' })

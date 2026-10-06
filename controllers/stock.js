@@ -1,7 +1,9 @@
 const { Op, fn, col } = require("sequelize");
-const Asset = require("../models/asset");
-const AssetCategory = require("../models/assetCategory");
+const {AssetCategory,Asset} =require("../models/index")
 
+const logger = require("../helpers/logger");
+
+// ========= Stock API ===========
 exports.stockApi = async function (req, res, next) {
   try {
     const draw = parseInt(req.query.draw) || 1;
@@ -20,8 +22,14 @@ exports.stockApi = async function (req, res, next) {
         { model: { [Op.iLike]: q } },
       ];
     }
-    if (category && Number.isInteger(Number(category))) where.category = Number(category);
-    if (typeof branch === "string" && branch.trim()) where.branch = branch.trim();
+
+    if (category && Number.isInteger(Number(category))) {
+      where.category = Number(category);
+    }
+
+    if (typeof branch === "string" && branch.trim()) {
+      where.branch = branch.trim();
+    }
 
     const [recordsTotal, { rows, count }, branchRows] = await Promise.all([
       Asset.count({ where: { status: "In Stock" } }),
@@ -33,7 +41,6 @@ exports.stockApi = async function (req, res, next) {
         offset: start,
         distinct: true,
       }),
-      // totals by branch, for ALL rows matching the filters (not only this page)
       Asset.findAll({
         attributes: [
           "branch",
@@ -64,13 +71,15 @@ exports.stockApi = async function (req, res, next) {
       recordsTotal,
       recordsFiltered: count,
       data: rows,
-      branches,   // totals by branch
-      totals,     // grand total for the footer
+      branches,
+      totals,
     });
   } catch (error) {
-    next(error);
+    return res.status(500).json({ message: error.message });
   }
 };
+
+// ========= Stock View ===========
 exports.stockView = async function (req, res, next) {
   try {
     const [categories, branchRows] = await Promise.all([
@@ -87,10 +96,9 @@ exports.stockView = async function (req, res, next) {
     res.render("user/stock/stocks", {
       activePage: "stock",
       categories,
-      branches: branchRows.map((b) => b.branch),
     });
   } catch (error) {
     logger.error(`Stock view error: ${error}`);
-    next(error);
+    res.render("error", { error });
   }
 };

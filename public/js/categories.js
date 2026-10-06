@@ -1,25 +1,12 @@
 
 // DataTable
-function* generateNumber(){
-    let count=1
-    while(true){
-        yield count++
-    }
-}
-
-
-const serialNumber=generateNumber()
-
 const table = $("#categoryTable").DataTable({
     serverSide: true,
-    precessing: false,
+    processing: true,
     dom: "lrtip",
     pageLength: 10,
     lengthMenu: [10, 25, 50, 100],
-    language: {
-    emptyTable: "",
-    zeroRecords: ""
-},
+    language: dataTableMessages("categories", "fas fa-list"),
     ajax: {
         url: "/asset-categoriesApi",
         data: function (d) {
@@ -30,90 +17,74 @@ const table = $("#categoryTable").DataTable({
         }
     },
     columns: [
-        { data: null,width:"25px",render:(data,type,row,meta)=>`<span>${meta.settings._iDisplayStart+meta.row+1}</span>` },
-        { data: "name", width:"100px",render: (name) => `<span class="fw-semibold">${name}</span>` },
-      {
-    data: "desc",
-    width:"400px",
-    render: (desc) => `
+        { data: null, width: "25px", render: (data, type, row, meta) => `<span>${meta.settings._iDisplayStart + meta.row + 1}</span>` },
+        { data: "name", width: "100px", render: (name) => `<span class="fw-semibold">${name}</span>` },
+        {
+            data: "desc",
+            width: "400px",
+            render: (desc) => `
         <span class="text-muted w-100  d-block" title="${desc || ""}">
             ${desc || "---"}
         </span>
     `
-},
+        },
         {
             data: "createdAt",
             render: (d) => new Date(d).toLocaleDateString("en-IN"),
         },
         {
-      data: "id",
-      orderable: false,
-      searchable: false,
-      className: "text-end",
-      render: (id,type,category) => `
-        <button
-        type="button"
-        class="btn btn-sm btn-outline-primary btn-edit-category"
-        title="Edit">
-        <i class="fa-solid fa-pen"></i>
-    </button>
- <button
-                type="button"
-                class="btn btn-sm btn-outline-danger btn-delete"
-                data-id="${id}"
-                onclick="deleteCategory(${id})"
-                
-                title="Delete">
-                <i class="fa-solid fa-trash"></i>
-            </button>
-
+            data: "id",
+            orderable: false,
+            searchable: false,
+            className: "text-end",
+            render: (id, type, category) => `
+                   <button
+                      type="button"
+                      class="btn btn-sm btn-outline-primary btn-edit-category"
+                      title="Edit">
+                      <i class="fa-solid fa-pen"></i>
+                   </button>
+                   <button
+                       type="button"
+                       class="btn btn-sm btn-outline-danger btn-delete"
+                       data-id="${id}"
+                       onclick="deleteCategory(${id})"
+                       title="Delete">
+                       <i class="fa-solid fa-trash"></i>
+                   </button>
       `,
-    },
+        },
     ],
-    order:[]
+    order: []
 })
 
-// on load
+// ========on load==========
 table.on("xhr.dt", function (event, settings, json) {
-  $("#categoryLoading").addClass("d-none");
-  if (!json || !json.data || json.data.length === 0) {
-    $("#categoryEmpty").removeClass("d-none");
-  } else {
-    $("#categoryEmpty").addClass("d-none");
-  }
+    $("#categoryError").addClass("d-none");
 });
 
-// before loading
+//========== on loading=======
 table.on("preXhr.dt", function () {
-  $("#categoryLoading").removeClass("d-none");
-  $("#categoryEmpty").addClass("d-none");
-  $("#categoryError").addClass("d-none");
+    $("#categoryError").addClass("d-none");
 });
+// ======error=======
 
 table.on("error.dt", function () {
-  $("#categoryEmpty").addClass("d-none");
-  $("#categoryLoading").addClass("d-none");
-  $("#categoryError").removeClass("d-none");
+    $("#categoryError").removeClass("d-none");
 });
 
-table.on("click",".btn-edit-category",function(){
-    const row=table.row($(this).closest("tr")).data()
+// ========== Get row Data========== 
+table.on("click", ".btn-edit-category", function () {
+    const row = table.row($(this).closest("tr")).data()
     editCategory(row)
-
 })
 
-// search with delay
-let filterTimer;
-function reloadTable() {
-  clearTimeout(filterTimer);
-  filterTimer = setTimeout(function () {
-    table.ajax.reload();
-  }, 300);
-}
+const reloadTable = createReload(table);
+
 $("#searchInput").on("input", reloadTable);
 
 
-// #categoryForm
+// ====== Category API(create,update)===========
 const categoryForm = $("#categoryForm")
 categoryForm.on("submit", async (e) => {
     e.preventDefault()
@@ -124,7 +95,7 @@ categoryForm.on("submit", async (e) => {
         const formData = new FormData(e.currentTarget)
         const name = formData.get("name")
         const desc = formData.get("desc")
-        const id= categoryForm.data("id") 
+        const id = categoryForm.data("id")
         let isValid = true
         if (name.trim() === "") {
             nameError.text(" Name is Required")
@@ -136,11 +107,10 @@ categoryForm.on("submit", async (e) => {
             }, 3000)
             return
         }
-        categorySubmitBtn.html('<div class="spinner-border spinner-border-sm" role="status"><span class="visually-hidden"></span></div>')
-        categorySubmitBtn.prop("disabled", true);
-        const apiUrl = id?`/asset-categoriesApi/${id}`:"/asset-categoriesApi"
+        setButtonLoading(categorySubmitBtn, true, "Save");
+        const apiUrl = id ? `/asset-categoriesApi/${id}` : "/asset-categoriesApi"
         const response = await fetch(apiUrl, {
-            method: id?"PUT": "POST",
+            method: id ? "PUT" : "POST",
             headers: {
                 "Content-Type": "application/json"
             },
@@ -164,7 +134,6 @@ categoryForm.on("submit", async (e) => {
         showToast(error.message)
     }
     finally {
-        categorySubmitBtn.html('Save')
-        categorySubmitBtn.prop("disabled", false);
+        setButtonLoading(categorySubmitBtn, false, "Save");
     }
 })

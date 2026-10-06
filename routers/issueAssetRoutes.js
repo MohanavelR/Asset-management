@@ -3,9 +3,14 @@ const { issueAssetView, issuesApi, issueAsset } = require("../controllers/issueA
 const pageAuthMiddleware = require("../middleware/pageMiddleware");
 const apiAuthMiddleware = require("../middleware/apiMiddleware");
 const { issueValidation } = require("../middleware/validationMiddleware");
+
 const router = express.Router();
 
-router.get("/issueAssets",pageAuthMiddleware ,issueAssetView); 
-router.get("/issuesApi",apiAuthMiddleware,issuesApi)
-router.post("/issueAssetApi", issueValidation, issueAsset);  
-module.exports=router
+// ========= Page Routes ===========
+router.get("/issueAssets", pageAuthMiddleware, issueAssetView);
+
+// ========= API Routes ===========
+router.get("/issuesApi", apiAuthMiddleware, issuesApi);
+router.post("/issueAssetApi", apiAuthMiddleware, issueValidation, issueAsset);
+
+module.exports = router;

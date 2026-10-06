@@ -4,7 +4,12 @@ const apiAuthMiddleware = require("../middleware/apiMiddleware");
 const { assetHistoryListView, assetHistoryListApi, assetHistoryView } = require("../controllers/assetHistory");
 
 const router = express.Router();
-router.get("/assetHistory",pageAuthMiddleware, assetHistoryListView);
-router.get("/assetHistoryApi",apiAuthMiddleware, assetHistoryListApi);     
-router.get("/assets/history/:id",pageAuthMiddleware, assetHistoryView);
-module.exports=router
+
+// ========= Page Routes ===========
+router.get("/assetHistory", pageAuthMiddleware, assetHistoryListView);
+router.get("/assets/history/:id", pageAuthMiddleware, assetHistoryView);
+
+// ========= API Routes ===========
+router.get("/assetHistoryApi", apiAuthMiddleware, assetHistoryListApi);
+
+module.exports = router;

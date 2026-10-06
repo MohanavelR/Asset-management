@@ -1,0 +1,13 @@
+
+mixin formTextarea(opts)
+  - const o = Object.assign({ required: false, value: '', rows: 3 }, opts)
+  - const inputId = o.id || o.name
+  if o.label
+    label.form-label(for=inputId)= o.label
+  textarea.form-control(
+    name=o.name,
+    id=inputId,
+    rows=o.rows,
+    required=o.required,
+    placeholder=o.placeholder || (o.label ? 'Enter ' + o.label.toLowerCase() : '')
+  )&attributes(attributes)= o.value

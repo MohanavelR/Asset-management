@@ -1,54 +1,94 @@
 const { DataTypes } = require("sequelize");
 const { sequelize } = require("../config/db");
+const emptyToNull = require("../helpers/emptyToNull");
+const { RETURN_REASONS } = require("../config/contants");
 
-const RETURN_REASONS = ["Upgrade", "Repair", "Resignation", "Replacement", "Other"];
-
-const emptyToNull = (field) =>
-  function (value) {
-    this.setDataValue(field, value === "" || value === undefined ? null : value);
-  };
 
 const AssetIssue = sequelize.define(
   "AssetIssue",
   {
-    id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
+    // ========= Auto Fields ===========
+    id: {
+      type: DataTypes.INTEGER,
+      primaryKey: true,
+      autoIncrement: true,
+    },
 
+    // ========= Required Fields ===========
     assetId: {
       type: DataTypes.INTEGER,
       allowNull: false,
       references: { model: "assets", key: "id" },
     },
+
     employeeId: {
       type: DataTypes.INTEGER,
       allowNull: false,
       references: { model: "employees", key: "id" }, // use your real Employee table name
     },
 
-    issueDate: { type: DataTypes.DATEONLY, allowNull: false },
-    issueRemarks: { type: DataTypes.TEXT, allowNull: true, set: emptyToNull("issueRemarks") },
+    issueDate: {
+      type: DataTypes.DATEONLY,
+      allowNull: false,
+    },
 
-    // empty until the asset is returned
-    returnDate: { type: DataTypes.DATEONLY, allowNull: true, set: emptyToNull("returnDate") },
+    // ========= Optional Fields ===========
+    issueRemarks: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+      set: emptyToNull("issueRemarks"),
+    },
+
+    issuedBy: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+    },
+
+    returnedBy: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+    },
+
+    // ========= Conditional Fields ===========
+    
+    returnDate: {
+      type: DataTypes.DATEONLY,
+      allowNull: true,
+      set: emptyToNull("returnDate"),
+    },
+
+  
     returnReason: {
       type: DataTypes.ENUM(...RETURN_REASONS),
       allowNull: true,
       set: emptyToNull("returnReason"),
     },
-    returnRemarks: { type: DataTypes.TEXT, allowNull: true, set: emptyToNull("returnRemarks") },
 
-    issuedBy: { type: DataTypes.INTEGER, allowNull: true },
-    returnedBy: { type: DataTypes.INTEGER, allowNull: true },
+    
+    returnRemarks: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+      set: emptyToNull("returnRemarks"),
+    },
   },
   {
     tableName: "asset_issues",
     timestamps: true,
 
     indexes: [
-      // an asset can have only ONE open issue (returnDate is null) at a time
-      { unique: true, fields: ["assetId"], where: { returnDate: null }, name: "uq_asset_open_issue" },
-      { fields: ["employeeId"] },
+   
+      { 
+        unique: true, 
+        fields: ["assetId"], 
+        where: { returnDate: null }, 
+        name: "uq_asset_open_issue" 
+      },
+      { 
+        fields: ["employeeId"] 
+      },
     ],
-
+  
+    // Condition Field conditions  
     validate: {
       returnNeedsReason() {
         if (this.returnDate && !this.returnReason) {
@@ -70,4 +110,3 @@ const AssetIssue = sequelize.define(
 );
 
 module.exports = AssetIssue;
-module.exports.RETURN_REASONS = RETURN_REASONS;

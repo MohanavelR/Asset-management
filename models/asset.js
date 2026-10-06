@@ -1,15 +1,11 @@
 const { DataTypes, Op } = require("sequelize");
 const { sequelize } = require("../config/db");
-
-const emptyToNull = (field) =>
-    function (value) {
-        this.setDataValue(field, value === "" || value === undefined ? null : value);
-    };
-const SCRAP_REASONS = ["Obsolete", "Damaged beyond repair", "Lost or stolen", "Other"];
+const emptyToNull = require("../helpers/emptyToNull");
 
 const Asset = sequelize.define(
     "Asset",
     {
+        // ========= Auto Fields ===========
         id: {
             type: DataTypes.INTEGER,
             primaryKey: true,
@@ -20,6 +16,8 @@ const Asset = sequelize.define(
             allowNull: true,
             unique: true,
         },
+
+        // ========= Required Fields ===========
         serial_no: {
             type: DataTypes.STRING,
             allowNull: false,
@@ -41,9 +39,9 @@ const Asset = sequelize.define(
             allowNull: false,
             validate: { notEmpty: { msg: "Model is required" } },
         },
-        acqDate: { 
-            type: DataTypes.DATEONLY, 
-            allowNull: false 
+        acqDate: {
+            type: DataTypes.DATEONLY,
+            allowNull: false
         },
         acqPrice: {
             type: DataTypes.DECIMAL(10, 2),
@@ -60,12 +58,14 @@ const Asset = sequelize.define(
             allowNull: false,
             validate: { notEmpty: { msg: "Branch is required" } },
         },
+       
         status: {
             type: DataTypes.ENUM("In Stock", "Issued", "Returned", "Scrapped"),
             defaultValue: "In Stock",
             allowNull: false,
         },
-        // ---- optional ----
+
+        // ========= Optional Fields ===========
         issuedDate: {
             type: DataTypes.DATEONLY,
             allowNull: true,
@@ -75,11 +75,6 @@ const Asset = sequelize.define(
             type: DataTypes.DATEONLY,
             allowNull: true,
             set: emptyToNull("returnDate")
-        },
-        scrappedDate: {
-            type: DataTypes.DATEONLY,
-            allowNull: true,
-            set: emptyToNull("scrappedDate")
         },
         warrantyStartDate: {
             type: DataTypes.DATEONLY,
@@ -91,11 +86,6 @@ const Asset = sequelize.define(
             allowNull: true,
             set: emptyToNull("warrantyEndDate")
         },
-        assignedTo: {
-            type: DataTypes.INTEGER,
-            allowNull: true,
-            set: emptyToNull("assignedTo")
-        },
         specifications: {
             type: DataTypes.TEXT,
             allowNull: true,
@@ -105,21 +95,53 @@ const Asset = sequelize.define(
             type: DataTypes.INTEGER,
             allowNull: true
         },
-        scrapReason:  { type: DataTypes.STRING(100), allowNull: true, set: emptyToNull("scrapReason") },
-scrapRemarks: { type: DataTypes.TEXT, allowNull: true, set: emptyToNull("scrapRemarks") },
-scrappedBy:   { type: DataTypes.INTEGER, allowNull: true },
 
+        // ========= Conditional Fields ===========
+       
+        assignedTo: {   
+            type: DataTypes.INTEGER,
+            allowNull: true,
+            set: emptyToNull("assignedTo")
+        },
+        scrappedDate: { 
+            type: DataTypes.DATEONLY,
+            allowNull: true,
+            set: emptyToNull("scrappedDate")
+        },
+        scrapReason:  { 
+            type: DataTypes.STRING(100), 
+            allowNull: true, 
+            set: emptyToNull("scrapReason") 
+        },
+        scrapRemarks: { 
+            type: DataTypes.TEXT, 
+            allowNull: true, 
+            set: emptyToNull("scrapRemarks") 
+        },
+        scrappedBy:   { 
+            type: DataTypes.INTEGER, 
+            allowNull: true 
+        },
     },
     {
         tableName: "assets",
         timestamps: true,
-        hooks:{
-            afterCreate:async function(asset,options){
+        hooks: {
+            // ========== Generate Asset ID =============
+            afterCreate: async function (asset, options) {
                 const tag = `AST-${String(asset.id).padStart(4, "0")}`
-                await asset.update({assetTag:tag},{transaction:options.transaction}) 
+                await asset.update({ assetTag: tag }, { transaction: options.transaction })
             }
         },
-        defaultScope: { where: { status: { [Op.ne]: "Scrapped" } } },
+        
+        // ===== This is for Normally Call Get Method doesn't come ===========
+        defaultScope: { 
+            where: { 
+                status: { [Op.ne]: "Scrapped" } 
+            } 
+        },
+        
+        // ========= Condition field Conditions ===========
         validate: {
             issuedNeedsEmployee() {
                 if (this.status === "Issued" && !this.assignedTo) {
@@ -131,10 +153,8 @@ scrappedBy:   { type: DataTypes.INTEGER, allowNull: true },
                     throw new Error("Scrapped date is required when status is Scrapped");
                 }
             },
-            
         },
     }
 );
 
 module.exports = Asset;
-module.exports.SCRAP_REASONS = SCRAP_REASONS;

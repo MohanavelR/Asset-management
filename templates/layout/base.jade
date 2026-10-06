@@ -14,6 +14,7 @@ html(lang="en")
         link(rel="preconnect" href="https://fonts.googleapis.com")
         link(rel="preconnect" href="https://fonts.gstatic.com" crossorigin)
         link(href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet")
+        
         //-=====Icon========
         link(rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.3.1/css/all.min.css" integrity="sha512-QeR2VH+lsBE5LSAe1Q5EnTBbe7XTBubt8dG93Y7gidSgdMCr8nVqKcfKAMyN96SV8KDbZVTDXChatu5G2KQGzg==" crossorigin="anonymous" referrerpolicy="no-referrer")
         link(rel="stylesheet" href="https://cdn.datatables.net/1.13.8/css/dataTables.bootstrap5.min.css")
@@ -23,17 +24,23 @@ html(lang="en")
 
         //======= Styles Block====
         block styles
-    body
+    
+    body.app-bg-primary
+        
         //====Web content ====
         block content
 
         //- Toast Message
         .toast-container.position-fixed.top-0.end-0.p-3(style="z-index: 1100")
+           
+            //- Single Toast
             #toast-box.toast(role="alert" aria-live="assertive" aria-atomic="true")
                 .toast-header.justify-content-between.w-100
                     strong #{appName}
                     button.btn-close(type="button" data-bs-dismiss="toast")
                 .toast-body#toast-message
+           
+            //- Multiple Toast
             #toast-list.d-flex.flex-column.gap-2
 
         //==========Bootstrap JS=======
@@ -41,53 +48,50 @@ html(lang="en")
         script(src="https://code.jquery.com/jquery-3.7.0.min.js")
         script(src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js")
         script(src="https://cdn.datatables.net/1.13.8/js/dataTables.bootstrap5.min.js")
+        script(src="/js/helper.js")
         script.
             
             //-================Single Toast=====================
             function showToast(message, success = false) {
-                const toastElement = document.getElementById("toast-box");
-                const toastMessage = document.getElementById("toast-message");
-                toastMessage.textContent = message;
-
-                toastElement.classList.remove("text-bg-success", "text-bg-danger");
-                toastElement.classList.add(success ? "text-bg-success" : "text-bg-danger");
-
+                const toastElement =$("#toast-box");
+                const toastMessage = $("#toast-message");
+                toastMessage.text(message);
+                toastElement
+                        .removeClass("text-bg-success text-bg-danger")
+                        .addClass(success ? "text-bg-success" : "text-bg-danger");
                 bootstrap.Toast.getOrCreateInstance(toastElement).show();
             }
+            
             //-===============Mutiple Toast========================
 
             function showToasts(messages, success = false) {
-                const list = document.getElementById("toast-list");
-
+                const list = $("#toast-list");
+                
                 messages.forEach((message, i) => {
-                    const el = document.createElement("div");
-                    el.className = "toast gap-2 align-items-center border-0 text-bg-" + (success ? "success" : "danger");
-                    el.setAttribute("role", "alert");
-                    el.setAttribute("aria-live", "assertive");
-                    el.setAttribute("aria-atomic", "true");
-
-                    const wrap = document.createElement("div");
-                    wrap.className = "d-flex";
-                    
-
-                    const body = document.createElement("div");
-                    body.className = "toast-body";
-                    body.textContent = message;
-
-                    const close = document.createElement("button");
-                    close.type = "button";
-                    close.className = "btn-close btn-close-white me-2 m-auto";
-                    close.setAttribute("data-bs-dismiss", "toast");
-
+                    const toastElement = $("<div>",{
+                        class:"toast gap-2 align-items-center border-0 text-bg-" + (success ? "success" : "danger")
+                    })                   
+                    const wrap =$("<div>",{
+                        class:"d-flex"
+                    });
+                    const body = $("<div>",{
+                        class:"toast-body",
+                        text:message
+                    });
+                    const close = $("<button>", { 
+                       type: "button", 
+                       class: "btn-close btn-close-white me-2 m-auto", 
+                       "data-bs-dismiss": "toast" 
+                    });
                     wrap.append(body, close);
-                    el.appendChild(wrap);
-                    list.appendChild(el);
-
-                    const toast = new bootstrap.Toast(el, { delay: 4000 });
+                    toastElement.append(wrap);
+                    list.append(toastElement);
+                    const toast = new bootstrap.Toast(toastElement, { delay: 4000 });
                     setTimeout(() => toast.show(), i * 150);
-                    el.addEventListener("hidden.bs.toast", () => el.remove());
+                    toastElement.on("hidden.bs.toast", () => toastElement.remove());
                 });
             }
+            
             //-==============Set Loading or disabled Button=================
             function setButtonLoading(button, loading = true, text = "Save") {
                 if (loading) {

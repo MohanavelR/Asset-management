@@ -1,68 +1,121 @@
 extends ../../layout/userLayout
+include ../../components/branchSelect.jade
+include ../../components/formInput.jade
+include ../../components/formSelect.jade
 
 block userContent
 
   - const e = employee || {}
-
+  
+  //- ======== Header ================
   .d-flex.align-items-center.mb-4.mt-4
     a.text-dark.me-3.fs-3(href='/employees', title='Back')
       i.fas.fa-arrow-left
     h3.mb-0= employee ? 'Update Employee' : 'Add Employee'
   hr
+  
+  //-============ Employee Form =================
   form#employeeForm(data-id=e.id).mt-3
     .row.g-3
-      .col-lg-4.col-md-6
-        label.form-label Employee ID
-        input.form-control(name='employeeId', value=e.employeeId, readonly=!!employee)
+      //- ====== Employee ID ======
+      .col-lg-4.col-md-6.form-group.required-field
+        +formInput({
+          label: 'Employee ID',
+          name: 'employeeId',
+          value: employeeId || e.employeeId,
+          placeholder: 'Auto generated'
+        })(readonly)
 
-      .col-lg-4.col-md-6
-        label.form-label Name
-        input.form-control(name='name', value=e.name)
+      //- ====== Name ======
+      .col-lg-4.col-md-6.form-group.required-field
+        +formInput({
+          label: 'Name',
+          name: 'name',
+          value: e.name,
+          required: true,
+          placeholder: 'Enter full name'
+        })
 
-      .col-lg-4.col-md-6
-        label.form-label Email
-        input.form-control(type='email', name='email', value=e.email)
+      //- ====== Email ======
+      .col-lg-4.col-md-6.form-group.required-field
+        +formInput({
+          label: 'Email',
+          name: 'email',
+          value: e.email,
+          type: 'email',
+          required: true,
+          placeholder: 'e.g. name@company.com'
+        })
 
-      .col-lg-4.col-md-6
-        label.form-label Phone
-        input.form-control(type='tel', name='phone', value=e.phone)
+      //- ====== Phone ======
+      .col-lg-4.col-md-6.form-group.required-field
+        +formInput({
+          label: 'Phone',
+          name: 'phone',
+          value: e.phone,
+          type: 'tel',
+          required: true,
+          placeholder: 'e.g. 9876543210'
+        })
 
-      .col-lg-4.col-md-6
-        label.form-label Department
-        input.form-control(name='department', value=e.department)
+      //- ====== Department ======
+      .col-lg-4.col-md-6.form-group.required-field
+        +formInput({
+          label: 'Department',
+          name: 'department',
+          value: e.department,
+          placeholder: 'e.g. Sales'
+        })
 
-      .col-lg-4.col-md-6
-        label.form-label Designation
-        input.form-control(name='designation', value=e.designation)
+      //- ====== Designation ======
+      .col-lg-4.col-md-6.form-group.required-field
+        +formInput({
+          label: 'Designation',
+          name: 'designation',
+          value: e.designation,
+          placeholder: 'e.g. Manager'
+        })
 
-      .col-lg-4.col-md-6
-        label.form-label Branch
-        input.form-control(name='branch', value=e.branch)
+      //- ====== Branch ======
+      .col-lg-4.col-md-6.form-group.required-field
+        +branchSelect({ 
+          selected: e.branch, 
+          required: true, 
+          placeholder: 'Select branch' 
+          })
+           
 
-      .col-lg-4.col-md-6
-        label.form-label Status
-        select.form-select(name='status')
-          option(value='Active', selected=e.status === 'Active') Active
-          option(value='Inactive', selected=e.status === 'Inactive') Inactive
+      //- ====== Status ======
+      .col-lg-4.col-md-6.form-group
+        +formSelect({
+          label: 'Status',
+          name: 'status',
+          options: ['Active', 'Inactive'],
+          selected: e.status || 'Active',
+          showPlaceholder: false
+        })
 
     .text-end.mt-4
       a.btn.btn-light.border.me-2(href='/employees') Cancel
-      button.btn.btn-primary#employee-save-btn(type='submit') Save
+      button#employee-save-btn.btn.btn-primary(type='submit') Save
+
+
 block scripts
   script.
+     
+    //-================= Employee Create API ===================
      const employeeForm=$("#employeeForm")
-    
      employeeForm.on("submit",async(event)=>{
        event.preventDefault()
        const employeeSaveBtn=$("#employee-save-btn")
-       
+
        try{
          const formData = new FormData(event.currentTarget)
          const data=Object.fromEntries(formData)
          const id=employeeForm.data("id")
          const apiUrl = id?`/updateEmployeeApi/${id}`:"/addEmployeeApi"
-         employeeSaveBtn.html('<div class="spinner-border spinner-border-sm" role="status"><span class="visually-hidden"></span></div>')
-         employeeSaveBtn.prop("disabled", true);
+         setButtonLoading(employeeSaveBtn, true, "Save");
+         
          const response = await fetch(apiUrl,{
           method:id?"PUT":"POST",
           headers:{
@@ -71,6 +124,7 @@ block scripts
           body :JSON.stringify(data)
          }) 
          const res_data=await response.json()
+         
          console.log(res_data)
          if (!res_data.success) {
             if (Array.isArray(res_data.errors) && res_data.errors.length) {
@@ -91,7 +145,6 @@ block scripts
          showToast(error.message || "Something went wrong", "danger")
        }
        finally{
-         employeeSaveBtn.html('Save')
-         employeeSaveBtn.prop("disabled", false);
+        setButtonLoading(employeeSaveBtn, false, "Save");
        }
      })

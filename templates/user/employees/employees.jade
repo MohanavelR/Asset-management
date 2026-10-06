@@ -1,58 +1,84 @@
 extends ../../layout/userLayout
+include ../../components/formInput.jade
+include ../../components/formSelect.jade
+include ../../components/branchSelect
 
 block title 
     title  Employees | Asset Management 
 block userContent 
-   div.pt-3 
-      div.d-flex.justify-content-between
-         h2 Employees 
-         div 
-          a(href="/employees/add").btn.btn-primary 
-            i.fa-solid.fa-plus
-            |  Add Employee 
-    hr   
-   
-   .row.g-3.mb-3.justify-content-between
-      //-========Search Filter===========   
-      .col-md-4
-          label.form-label Search
-          input#searchInput.form-control(type="search" placeholder="Name, email, phone,")
-      //-==========Status Filter============ 
-      .col-md-3
-          label.form-label Status
-          select#statusFilter.form-select
-              option(value="") All
-              option(value="Active" selected) Active
-              option(value="Inactive") Inactive
-    //-==================Employee Table Management==================
-   .card
-            .card-body
-                .table-responsive
-                    table#employeeTable.table.table-striped.table-hover.w-100
-                        thead
-                            tr
-                                th Emp ID
-                                th Name
-                                th Email
-                                th Phone
-                                th Department
-                                th Designation
-                                th Branch
-                                th Status
-                                th Action 
-                        tbody#employeeTableBody
-                           //-==========Error State==========
-                           tr#employeeError.d-none
-                              td.text-center.py-4(colspan="9")
-                                 i.fa-solid.fa-triangle-exclamation.fa-2x.text-danger
-                                 p.mt-2.mb-0.text-danger
-                                           | Unable to load employees.
+  div.container-fluid.py-3
+      //- =========== Header=============
+      .d-flex.flex-column.flex-sm-row.justify-content-sm-between.align-items-start.justify-content-start.align-items-sm-center.mb-4
+              div 
+                 h2.fw-bold.mb-1.app-text-primary Employees
+                 p.app-text-tertiary.small.mb-0 Manage employee records, create new employees, and update existing employee details
+              div.mt-3.mt-md-0
+              a(href="/employees/add").btn.btn-primary 
+                i.fa-solid.fa-plus
+                |  Add Employee 
+      hr   
+     
+      .row.g-3.justify-content-between
+       
+        //-========Search Filter===========   
+        .col-md-4
+            +formInput({
+            id: 'searchInput',
+            label: 'Search',
+            name: 'search',
+            type: 'search',
+            placeholder: 'Name, email, phone...'
+            })
+         //-==========Branch Filter============     
+        .col-md-3   
+          +branchSelect({ 
+          placeholder: 'Select branch',
+          id: 'branchFilter',
+        })
+        
+        //-==========Status Filter============ 
+        .col-md-3
+           +formSelect({
+            id: 'statusFilter',
+            label: 'Status',
+            name: 'status',
+            options: ['Active', 'Inactive'],
+            selected: 'Active',
+            placeholder: 'All'
+            })
+        
+             
+        hr
+      
+      //-==================Employee Table Management==================
+      .card.app-border-secondary.app-bg-secondary
+              .card-body
+                  .table-responsive
+                      table#employeeTable.table.table-striped.table-hover.w-100
+                          thead
+                              tr
+                                  th Emp ID
+                                  th Name
+                                  th Email
+                                  th Phone
+                                  th Department
+                                  th Designation
+                                  th Branch
+                                  th Status
+                                  th Action 
+                          tbody#employeeTableBody
+                             //-==========Error State==========
+                             tr#employeeError.d-none
+                                td.text-center.py-4(colspan="9")
+                                   i.fa-solid.fa-triangle-exclamation.fa-2x.text-danger
+                                   p.mt-2.mb-0.text-danger
+                                             | Unable to load employees.
 
 
 block scripts
   script(src="/js/employees.js")
   script.
-    //-
+    //============ Delete API================
      async function deleteEmployee(id) {
         if(!id){
             return
@@ -79,16 +105,3 @@ block scripts
 
       }                                      
                            
-//- extends ../../layout/userLayout
-
-//- block title 
-//-     title  Employees | Asset Management 
-//- block userContent 
-//-    div.pt-3 
-//-       div.d-flex.justify-content-between
-//-          h2 Employees 
-//-          div 
-//-           a(href="").btn.btn-primary 
-//-             i.fa-solid.fa-plus
-//-             |  Add Employee 
-//-       hr         

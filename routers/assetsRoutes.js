@@ -1,17 +1,30 @@
-const {  addAssetView, createAsset, assetListView, assetsApi, editAssetView, updateAsset, viewAssetView, deleteAsset } = require("../controllers/asset");
+const express = require("express");
+const {
+  addAssetView,
+  createAsset,
+  assetListView,
+  assetsApi,
+  editAssetView,
+  updateAsset,
+  viewAssetView,
+  deleteAsset,
+} = require("../controllers/asset");
 const apiAuthMiddleware = require("../middleware/apiMiddleware");
 const pageAuthMiddleware = require("../middleware/pageMiddleware");
 const { assetValidation } = require("../middleware/validationMiddleware");
 
-const router=require("express").Router()
+const router = express.Router();
 
-router.get("/assets",pageAuthMiddleware,assetListView)
-router.get("/assets/add",pageAuthMiddleware,addAssetView)
-router.get("/assets/:id/edit",pageAuthMiddleware ,editAssetView); 
-router.get("/assets/view/:id", pageAuthMiddleware,viewAssetView); 
-router.get("/assetsApi",apiAuthMiddleware, assetsApi);
-router.post("/addAssetApi",apiAuthMiddleware,createAsset)
-router.delete("/deleteAssetApi/:id",apiAuthMiddleware, deleteAsset);
-router.put("/updateAssetApi/:id",apiAuthMiddleware, assetValidation, updateAsset);
+// ========= Page Routes ===========
+router.get("/assets", pageAuthMiddleware, assetListView);
+router.get("/assets/add", pageAuthMiddleware, addAssetView);
+router.get("/assets/:id/edit", pageAuthMiddleware, editAssetView);
+router.get("/assets/view/:id", pageAuthMiddleware, viewAssetView);
 
-module.exports =router
+// ========= API Routes ===========
+router.get("/assetsApi", apiAuthMiddleware, assetsApi);
+router.post("/addAssetApi", apiAuthMiddleware, assetValidation, createAsset);
+router.put("/updateAssetApi/:id", apiAuthMiddleware, assetValidation, updateAsset);
+router.delete("/deleteAssetApi/:id", apiAuthMiddleware, deleteAsset);
+
+module.exports = router;

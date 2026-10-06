@@ -1,0 +1,8 @@
+
+mixin statCard(label, value, note)
+  .card.app-bg-secondary.app-border-primary.h-100
+    .card-body
+      .app-text-secondary.small= label
+      .fs-5.fw-bold.app-text-primary= value
+      if note
+        .small.app-text-tertiary= note

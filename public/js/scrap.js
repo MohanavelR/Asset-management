@@ -1,21 +1,25 @@
 const esc = (v) => $("<div>").text(v || "-").html();
-const fmt = (d) => (d ? d.split("-").reverse().join("-") : "-");
+const fmt = (d) => (d ? d.split("-").reverse().join("-") : "-"); // YYYY-MM-DD -> DD-MM-YYYY
 
-// ======================= DataTable: scrapped assets =======================
+// ======================= DataTable =======================
 const table = $("#scrapTable").DataTable({
   serverSide: true,
-  processing: false,
+  processing: true,
   ordering: false,
   dom: "lrtip",
   pageLength: 10,
   lengthMenu: [10, 25, 50, 100],
+  language: dataTableMessages("Scrapped Assets", "fas fa-box"),
   ajax: {
     url: "/scrapListApi",
     data: function (d) {
       d.query = ($("#searchInput").val() || "").trim();
       d.category = $("#categoryFilter").val() || "";
+      d.branch = $("#branchFilter").val() || "";
     },
-    dataSrc: function (res) { return res.data; }
+    dataSrc: function (res) {
+      return res.data;
+    }
   },
   columns: [
     { data: "assetTag" },
@@ -29,45 +33,40 @@ const table = $("#scrapTable").DataTable({
   ]
 });
 
+// ============= on Loading =============
 table.on("preXhr.dt", function () {
-  $("#scrapLoading").removeClass("d-none");
-  $("#scrapEmpty").addClass("d-none");
   $("#scrapError").addClass("d-none");
 });
-table.on("xhr.dt", function (e, s, json) {
-  $("#scrapLoading").addClass("d-none");
-  $("#scrapEmpty").toggleClass("d-none", !!(json && json.data && json.data.length));
+
+// ============= on View =============
+table.on("xhr.dt", function () {
+  $("#scrapError").addClass("d-none");
 });
+
+// ============= on Error =============
 table.on("error.dt", function () {
-  $("#scrapLoading, #scrapEmpty").addClass("d-none");
   $("#scrapError").removeClass("d-none");
 });
 
 // ======================= Filters =======================
-let filterTimer;
-function reloadTable() {
-  clearTimeout(filterTimer);
-  filterTimer = setTimeout(() => table.ajax.reload(), 300);
-}
+const reloadTable = createReload(table);
 $("#searchInput").on("input", reloadTable);
-$("#categoryFilter").on("change", reloadTable);
-$("#resetFilters").on("click", function () {
-  $("#searchInput, #categoryFilter").val("");
-  table.ajax.reload();
-});
+$("#categoryFilter, #branchFilter").on("change", reloadTable);
 
 // ======================= Modal =======================
 const scrapModalEl = document.getElementById("scrapModal");
 const scrapForm = $("#scrapForm");
 const assetSelect = scrapForm.find("select[name=assetId]");
 
-// Re-stock is enabled only for assets in Repair
+// Re-stock is enabled only for assets with status "Returned"
 function syncRestockButton() {
   const status = assetSelect.find("option:selected").data("status");
+  console.log(status)
   $("#restock-btn").prop("disabled", status !== "Returned");
 }
 assetSelect.on("change", syncRestockButton);
 
+// ==== When the modal closes, reset the form and set today's date ====
 scrapModalEl.addEventListener("hidden.bs.modal", function () {
   const today = scrapForm.find("input[name=scrappedDate]").attr("max");
   scrapForm[0].reset();
@@ -81,15 +80,20 @@ scrapForm.on("submit", async (event) => {
   if (!confirm("Scrap this asset? It will be hidden everywhere except this list and reports.")) return;
 
   const btn = $("#scrap-save-btn");
+
   try {
     const data = Object.fromEntries(new FormData(event.currentTarget));
-    btn.html('<div class="spinner-border spinner-border-sm"></div>').prop("disabled", true);
+    setButtonLoading(btn, true, "Scrap");
 
     const response = await fetch("/scrapAssetApi", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data)
     });
+
+    if (!(response.headers.get("content-type") || "").includes("application/json")) {
+      throw new Error("Server returned " + response.status + ". Check the route /scrapAssetApi");
+    }
     const res_data = await response.json();
 
     if (!res_data.success) {
@@ -99,42 +103,50 @@ scrapForm.on("submit", async (event) => {
         showToast(res_data.message || "Something went wrong", "danger");
       }
     } else {
-      showToast(res_data.message, "success");
+      showToast(res_data.message || "Asset scrapped", "success");
+
+       // Remove process assets
       assetSelect.find("option[value='" + data.assetId + "']").remove();
+
       bootstrap.Modal.getOrCreateInstance(scrapModalEl).hide();
       table.ajax.reload(null, false);
     }
   } catch (error) {
     showToast(error.message || "Something went wrong", "danger");
   } finally {
-    btn.html("Scrap").prop("disabled", false);
+    setButtonLoading(btn, false, "Scrap");
   }
 });
 
 // ======================= Re-stock =======================
 $("#restock-btn").on("click", async function () {
   const assetId = assetSelect.val();
-  if (!assetId) return showToast("Please select an asset", "danger");
-  if (!confirm("Repair complete? The asset will go back In Stock.")) return;
+  if (!assetId) {
+    return showToast("Please select an asset", "danger");
+  }
+  if (!confirm("Repair complete? The asset will go back In Stock.")){
+    return;
+  }
 
   const btn = $(this);
+
   try {
     btn.prop("disabled", true);
+
     const response = await fetch("/restockAssetApi", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ assetId })
     });
     const res_data = await response.json();
-
     if (!res_data.success) {
       showToast(res_data.message || "Something went wrong", "danger");
     } else {
-      showToast(res_data.message, "success");
-      // the asset is now In Stock: update the option in place
+      showToast(res_data.message || "Asset re-stocked", "success");
       const opt = assetSelect.find("option:selected");
       opt.data("status", "In Stock").attr("data-status", "In Stock");
-      opt.text(opt.text().replace(/- Repair$/, "- In Stock"));
+      opt.text(opt.text().replace(/- [^-]+$/, "- In Stock"));
+
       bootstrap.Modal.getOrCreateInstance(scrapModalEl).hide();
     }
   } catch (error) {

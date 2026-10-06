@@ -1,18 +1,21 @@
 const { DataTypes } = require("sequelize");
 const { sequelize } = require("../config/db");
+const emptyToNull = require("../helpers/emptyToNull");
+const { HISTORY_ACTIONS } = require("../config/contants");
 
-const HISTORY_ACTIONS = ["Purchased", "Issued", "Returned", "Re-stocked", "Scrapped"];
 
-const emptyToNull = (field) =>
-  function (value) {
-    this.setDataValue(field, value === "" || value === undefined ? null : value);
-  };
 
 const AssetHistory = sequelize.define(
   "AssetHistory",
   {
-    id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
+     // ========= Auto Fields ===========
+    id: {
+      type: DataTypes.INTEGER,
+      primaryKey: true,
+      autoIncrement: true,
+    },
 
+    // ========= Required Fields ===========
     assetId: {
       type: DataTypes.INTEGER,
       allowNull: false,
@@ -24,28 +27,50 @@ const AssetHistory = sequelize.define(
       allowNull: false,
     },
 
-    // the business date of the event (purchase date, issue date, return date...)
-    actionDate: { type: DataTypes.DATEONLY, allowNull: false },
+    actionDate: {
+      type: DataTypes.DATEONLY,
+      allowNull: false,
+    },
 
-    // who held it (Issued / Returned only)
+    toStatus: {
+      type: DataTypes.STRING(20),
+      allowNull: false,
+    },
+
+    // ========= Optional Fields ===========
+    
     employeeId: {
       type: DataTypes.INTEGER,
       allowNull: true,
       references: { model: "employees", key: "id" }, // use your real Employee table name
     },
 
-    // Returned: Upgrade, Repair, Resignation...  Scrapped: Obsolete, Damaged...
-    reason: { type: DataTypes.STRING(100), allowNull: true, set: emptyToNull("reason") },
-    remarks: { type: DataTypes.TEXT, allowNull: true, set: emptyToNull("remarks") },
+    reason: {
+      type: DataTypes.STRING(100),
+      allowNull: true,
+      set: emptyToNull("reason"),
+    },
 
-    // status change snapshot
-    fromStatus: { type: DataTypes.STRING(20), allowNull: true },
-    toStatus: { type: DataTypes.STRING(20), allowNull: false },
+    remarks: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+      set: emptyToNull("remarks"),
+    },
 
-    // money snapshot: filled on "Purchased" (acqPrice), useful for utilization reports
-    amount: { type: DataTypes.DECIMAL(10, 2), allowNull: true },
+    fromStatus: {
+      type: DataTypes.STRING(20),
+      allowNull: true,
+    },
 
-    performedBy: { type: DataTypes.INTEGER, allowNull: true }, // user id
+    amount: {
+      type: DataTypes.DECIMAL(10, 2),
+      allowNull: true,
+    },
+
+    performedBy: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+    },
   },
   {
     tableName: "asset_history",
@@ -56,4 +81,3 @@ const AssetHistory = sequelize.define(
 );
 
 module.exports = AssetHistory;
-module.exports.HISTORY_ACTIONS = HISTORY_ACTIONS;

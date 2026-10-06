@@ -1,6 +1,6 @@
 const {Sequelize}=require("sequelize")
 const logger=require("../helpers/logger")
-
+// ========= Connect Database ===========
 const sequelize = new Sequelize(
     process.env.DB_NAME,
     process.env.DB_USER,
@@ -12,7 +12,7 @@ const sequelize = new Sequelize(
         logging: false
     }
 );
-
+// ==============  Start Database =========== 
 const onDB=async ()=>{
     try {
        await sequelize.authenticate()

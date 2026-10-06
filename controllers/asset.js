@@ -1,26 +1,12 @@
 // controllers/assetController.js
 const { Op } = require("sequelize");
-const Asset = require("../models/asset");
-const AssetCategory = require("../models/assetCategory");
 const logger = require("../helpers/logger");
-const Employee = require("../models/employee");
 const { sequelize } = require("../config/db");
 const { logHistory } = require("../helpers/logHistory");
-Asset.belongsTo(AssetCategory, { foreignKey: "category", as: "categoryInfo" });
-AssetCategory.hasMany(Asset, { foreignKey: "category", as: "assets", onDelete: "RESTRICT" });
-Asset.belongsTo(Employee, { foreignKey: "assignedTo", as: "employee" });
-Employee.hasMany(Asset, { foreignKey: "assignedTo", as: "assets", onDelete: "SET NULL" });
-const assetIncludes = () => [{
-  model: AssetCategory,
-  as: "categoryInfo",
-  attributes: ["id", "name"]
-},
-{
-  model: Employee,
-  as: "employee",
-  attributes: ["id", "employeeId", "name"]
-},
-];
+const {AssetCategory,Employee,Asset} =require("../models/index")
+
+// ========= Helpers ===========
+
 async function getFormData() {
   const [categories, employees] = await Promise.all([
     AssetCategory.findAll({
@@ -37,33 +23,52 @@ async function getFormData() {
   ]);
   return { categories, employees };
 }
+
+
+// ================== Page Views =======================
+
+// ========= Asset List Page ===========
 exports.assetListView = async function (req, res, next) {
   try {
     const categories = await AssetCategory.findAll({
-      attributes: ["id", "name"], order: [["name", "ASC"]], raw: true,
+      attributes: ["id", "name"],
+      order: [["name", "ASC"]],
+      raw: true,
     });
-    res.render("user/assets/assets", { activePage: "assets", categories });
+    res.render("user/assets/assets", {
+      activePage: "assets",
+      categories,
+    });
+
   } catch (error) {
-    next(error);
+    logger.error(`Asset list page error: ${error}`);
+    res.render("error", { error });
   }
 };
 
+// ========= View Asset Page (single asset detail) ===========
 exports.viewAssetView = async function (req, res, next) {
   try {
     const id = Number(req.params.id);
-    if (!Number.isInteger(id) || id < 1) return res.status(404).send("Asset not found");
+   
+    if (!Number.isInteger(id) || id < 1) {
+      return res.render("error", { error: { message: "Assets Not Found" } });
+    }
 
     const asset = await Asset.findByPk(id, {
-  include: [
-    { model: AssetCategory, as: "categoryInfo", attributes: ["id", "name"] },
-    {
-      model: Employee,
-      as: "employee",
-      attributes: ["id", "employeeId", "name", "department", "designation", "branch"],
-    },
-  ],
-});
-    if (!asset) return res.status(404).send("Asset not found");
+      include: [
+        { model: AssetCategory, as: "categoryInfo", attributes: ["id", "name"] },
+        {
+          model: Employee,
+          as: "employee",
+          attributes: ["id", "employeeId", "name", "department", "designation", "branch"],
+        },
+      ],
+    });
+
+    if (!asset) {
+      return res.render("error", { error: { message: "Assets Not Found" } });
+    }
 
     res.render("user/assets/viewAsset", {
       activePage: "assets",
@@ -71,10 +76,11 @@ exports.viewAssetView = async function (req, res, next) {
     });
   } catch (error) {
     logger.error(`Asset view page error: ${error}`);
-    next(error);
+    res.render("error", { error });
   }
 };
 
+// ========= Add Asset Page (empty form) ===========
 exports.addAssetView = async function (req, res, next) {
   try {
     const { categories, employees } = await getFormData();
@@ -85,18 +91,20 @@ exports.addAssetView = async function (req, res, next) {
     });
   } catch (error) {
     logger.error(`Asset add view error: ${error}`);
-    next(error);
+    res.render("error", { error });
   }
 };
 
-
+// ========= Edit Asset Page (same form, filled with asset data) ===========
 exports.editAssetView = async function (req, res, next) {
   try {
     const asset = await Asset.findByPk(req.params.id, { raw: true });
-    if (!asset) return res.status(404).send("Asset not found");
 
+    if (!asset) {
+      return res.render("error", { error: { message: "Assets Not Found" } });
+    }
     const { categories, employees } = await getFormData();
-
+    
     res.render("user/assets/assetForm", {
       activePage: "assets",
       asset,
@@ -105,32 +113,26 @@ exports.editAssetView = async function (req, res, next) {
     });
   } catch (error) {
     logger.error(`Asset edit view error: ${error}`);
-    next(error);
+    res.render("error", { error });
   }
 };
 
 
 
-const SORTABLE = {
-  assetTag: ["assetTag"],
-  serial_no: ["serial_no"],
-  make: ["make"],
-  model: ["model"],
-  branch: ["branch"],
-  status: ["status"],
-  acqDate: ["acqDate"],
-  "categoryInfo.name": [{ model: AssetCategory, as: "categoryInfo" }, "name"],
-};
+// ========= Table (DataTable) API ===========
+
+
 
 exports.assetsApi = async function (req, res, next) {
   try {
     const draw = parseInt(req.query.draw) || 1;
     const start = Math.max(parseInt(req.query.start) || 0, 0);
     const length = Math.min(Math.max(parseInt(req.query.length) || 10, 1), 100);
-    const { query, status, category, orderCol, orderDir } = req.query;
+    const { query, status, category} = req.query;
 
     const where = {};
 
+    // search box
     if (query && query.trim()) {
       const q = `%${query.trim()}%`;
       where[Op.or] = [
@@ -142,12 +144,14 @@ exports.assetsApi = async function (req, res, next) {
         { branch: { [Op.iLike]: q } },
       ];
     }
+    // dropdown filters
     if (status) where.status = status;
-    if (category && Number.isInteger(Number(category))) where.category = Number(category);
+    if (category && Number.isInteger(Number(category))){
+        where.category = Number(category);
+    } 
 
-    const sortPath = SORTABLE[orderCol];
-    const dir = orderDir === "asc" ? "ASC" : "DESC";
-    const order = sortPath ? [[...sortPath, dir]] : [["createdAt", "DESC"]];
+    // sorting
+    const order =  [["createdAt", "DESC"]];
 
     const [recordsTotal, { rows, count }] = await Promise.all([
       Asset.count(),
@@ -170,27 +174,14 @@ exports.assetsApi = async function (req, res, next) {
     next(error);
   }
 };
-exports.getAssetById = async function (req, res, next) {
-  try {
-    const asset = await Asset.findByPk(req.params.id, {
-      include: [categoryInclude],
-    });
 
-    if (!asset) {
-      return res.status(404).json({
-        success: false,
-        message: "Asset not found",
-      });
-    }
 
-    return res.status(200).json({ success: true, data: asset });
-  } catch (error) {
-    next(error);
-  }
-};
+// ========= CRUD ===========
 
+
+// ================== create assets ======================
 exports.createAsset = async function (req, res, next) {
-  
+
   try {
     const {
       serial_no, category, make, model,
@@ -217,6 +208,7 @@ exports.createAsset = async function (req, res, next) {
       );
 
 
+    //  =========== create Asset History ==============
       await logHistory(
         {
           assetId: created.id,
@@ -228,8 +220,7 @@ exports.createAsset = async function (req, res, next) {
         },
         t
       );
-
-      return created; 
+      return created;
     });
 
 
@@ -242,6 +233,8 @@ exports.createAsset = async function (req, res, next) {
     next(error);
   }
 };
+
+//================= update asset details ==============
 exports.updateAsset = async function (req, res, next) {
   try {
     const asset = await Asset.findByPk(req.params.id);
@@ -253,7 +246,6 @@ exports.updateAsset = async function (req, res, next) {
       });
     }
 
-    // id and assetTag are never updated (primary key and generated tag)
     await asset.update({
       serial_no: req.body.serial_no,
       category: req.body.category,
@@ -278,6 +270,7 @@ exports.updateAsset = async function (req, res, next) {
   }
 };
 
+// ================== delete asset ===================
 exports.deleteAsset = async function (req, res, next) {
   try {
     const asset = await Asset.findByPk(req.params.id);
@@ -287,9 +280,7 @@ exports.deleteAsset = async function (req, res, next) {
         message: "Asset not found",
       });
     }
-
     await asset.destroy();
-
     return res.status(200).json({
       success: true,
       message: "Asset deleted successfully",

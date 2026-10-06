@@ -1,0 +1,11 @@
+mixin formInput(opts)
+  - const o = Object.assign({ type: 'text', required: false, value: '' }, opts)
+  if o.label
+    label.form-label(for=o.name)= o.label
+  input.form-control(
+    type=o.type,
+    name=o.name,
+    id=o.id,
+    value=o.value,
+    placeholder=o.placeholder || (o.label ? 'Enter ' + o.label.toLowerCase() : '')
+  )&attributes(attributes)

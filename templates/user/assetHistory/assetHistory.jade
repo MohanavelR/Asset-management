@@ -1,4 +1,6 @@
 extends ../../layout/userLayout
+include ../../components/informationBox
+include ../../components/statCard
 
 block title
     title Asset History | Asset Management
@@ -12,75 +14,41 @@ block userContent
     - const actionIcons = { 'Purchased': 'fa-cart-shopping', 'Issued': 'fa-user-check', 'Returned': 'fa-rotate-left', 'Re-stocked': 'fa-box', 'Scrapped': 'fa-ban' }
 
     div.pt-3
-        div.d-flex.justify-content-between
+        .d-flex.justify-content-between.align-items-center
             .d-flex.align-items-center
-                a.text-dark.me-3.fs-3(href='/assetHistory', title='Back')
+                a.app-text-primary.me-3.fs-3(href='/assetHistory', title='Back')
                     i.fas.fa-arrow-left
-                h2.mb-0 Asset History
+                h2.app-text-primary.mb-0 Asset History
             div
                 if a.status !== 'Scrapped'
                     a.btn.btn-outline-primary(href='/assets/view/' + a.id)
                         i.fas.fa-eye.me-1
                         | Asset Details
-        hr
+        hr.app-border-primary
 
-        //- Asset summary
-        .card.shadow-sm.border-0.mb-4
-            .card-body
-                .row.g-3
-                    .col-lg-3.col-md-6
-                        .text-muted.small Asset Tag
-                        .fw-semibold= a.assetTag
-                    .col-lg-3.col-md-6
-                        .text-muted.small Serial No
-                        .fw-semibold= a.serial_no
-                    .col-lg-3.col-md-6
-                        .text-muted.small Asset
-                        .fw-semibold= a.make + ' ' + a.model
-                    .col-lg-3.col-md-6
-                        .text-muted.small Status
-                        span.badge(class='text-bg-' + (statusColors[a.status] || 'secondary'))= a.status
-                    .col-lg-3.col-md-6
-                        .text-muted.small Category
-                        .fw-semibold= a.categoryInfo ? a.categoryInfo.name : '-'
-                    .col-lg-3.col-md-6
-                        .text-muted.small Branch
-                        .fw-semibold= a.branch
-                    .col-lg-3.col-md-6
-                        .text-muted.small Vendor
-                        .fw-semibold= a.vendor
-                    .col-lg-3.col-md-6
-                        .text-muted.small Purchase Date
-                        .fw-semibold= dt(a.acqDate)
+        //- ======== Asset summary ========
+        .row.g-4.mb-4
+            .col-lg-6
+                +informationBox('fas fa-laptop', 'Asset Information', [
+                    { field: 'Asset Tag', value: a.assetTag },
+                    { field: 'Serial No', value: a.serial_no },
+                    { field: 'Asset',     value: a.make + ' ' + a.model },
+                    { field: 'Category',  value: a.categoryInfo ? a.categoryInfo.name : '' },
+                    { field: 'Status',    value: a.status, badge: statusColors[a.status] || 'secondary' }
+                ], { cls: 'h-100 mb-0', labelWidth: '40%' })
 
-        //- Utilization of money invested
-        .row.g-3.mb-4
-            .col-lg-3.col-md-6
-                .card.shadow-sm.border-0.h-100
-                    .card-body
-                        .text-muted.small Money Invested
-                        .fs-5.fw-bold= money(summary.price)
-            .col-lg-3.col-md-6
-                .card.shadow-sm.border-0.h-100
-                    .card-body
-                        .text-muted.small Times Issued
-                        .fs-5.fw-bold= summary.issueCount
-            .col-lg-3.col-md-6
-                .card.shadow-sm.border-0.h-100
-                    .card-body
-                        .text-muted.small Days in Use
-                        .fs-5.fw-bold #{summary.daysIssued} of #{summary.lifeDays} days
-                        .small.text-muted #{summary.utilization}% utilization
-            .col-lg-3.col-md-6
-                .card.shadow-sm.border-0.h-100
-                    .card-body
-                        .text-muted.small Cost per Day in Use
-                        .fs-5.fw-bold= summary.costPerIssuedDay !== null ? money(summary.costPerIssuedDay) : 'Never issued'
+            .col-lg-6
+                +informationBox('fas fa-receipt', 'Purchase & Location', [
+                    { field: 'Branch',        value: a.branch },
+                    { field: 'Vendor',        value: a.vendor },
+                    { field: 'Purchase Date', value: dt(a.acqDate) }
+                ], { cls: 'h-100 mb-0', labelWidth: '40%' })
 
-        //- Timeline (compact, with icons)
-        .card.shadow-sm.border-0
-            .card-header.bg-white.fw-bold
-                i.fas.fa-clock-rotate-left.me-2.text-primary
+        
+        //- ======== Timeline ========
+        .card.app-bg-secondary.app-border-primary
+            .card-header.app-bg-tertiary.app-border-primary.app-text-primary.fw-medium
+                i.fas.fa-clock-rotate-left.me-2.app-text-tertiary
                 | Timeline
             .card-body
                 if history.length
@@ -89,8 +57,8 @@ block userContent
                             li(class='tl-' + (actionColors[h.action] || 'secondary'))
                                 span.tl-icon
                                     i.fa-solid(class=actionIcons[h.action] || 'fa-circle')
-                                .tl-date= dt(h.actionDate)
-                                .tl-text
+                                .tl-date.app-text-secondary= dt(h.actionDate)
+                                .tl-text.app-text-primary
                                     strong= h.action
                                     if h.employee
                                         |  · #{h.employee.name}
@@ -98,10 +66,10 @@ block userContent
                                         |  · #{h.reason}
                                     if h.amount !== null && h.amount !== undefined
                                         |  · #{money(h.amount)}
-                                    .small.text-muted
+                                    .small.app-text-secondary
                                         i.fa-solid.fa-arrow-right-arrow-left.me-2
                                         | #{h.fromStatus || 'New'} → #{h.toStatus}
                                     if h.remarks
-                                        .small.fst-italic= h.remarks
+                                        .small.fst-italic.app-text-tertiary= h.remarks
                 else
-                    p.text-muted.text-center.mb-0 No history recorded yet
+                    p.app-text-secondary.text-center.mb-0 No history recorded yet

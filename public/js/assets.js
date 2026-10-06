@@ -1,18 +1,17 @@
 const table = $("#assetTable").DataTable({
   serverSide: true,
-  processing: false,
+  processing: true,
   ordering: false,
   dom: "lrtip",
   pageLength: 10,
   lengthMenu: [10, 25, 50, 100],
+  language: dataTableMessages("assets", "fas fa-box"),
   ajax: {
     url: "/assetsApi",
     data: function (d) {
       d.query = ($("#searchInput").val() || "").trim();
       d.status = $("#statusFilter").val() || "";
       d.category = $("#categoryFilter").val() || "";
-
-        
     },
     dataSrc: function (res) {
       return res.data;
@@ -54,34 +53,24 @@ const table = $("#assetTable").DataTable({
   order: []
 });
 
+// =================on Loading============
 table.on("preXhr.dt", function () {
-  $("#assetLoading").removeClass("d-none");
-  $("#assetEmpty").addClass("d-none");
   $("#assetError").addClass("d-none");
 });
 
+// =================on View============
 table.on("xhr.dt", function (event, settings, json) {
-  $("#assetLoading").addClass("d-none");
-  if (!json || !json.data || json.data.length === 0) {
-    $("#assetEmpty").removeClass("d-none");
-  } else {
-    $("#assetEmpty").addClass("d-none");
-  }
+  $("#assetError").addClass("d-none");
 });
 
+// ============Error===================
 table.on("error.dt", function () {
-  $("#assetEmpty").addClass("d-none");
-  $("#assetLoading").addClass("d-none");
-  $("#assetError").removeClass("d-none");
+   $("#assetError").removeClass("d-none");
+ 
 });
 
-let filterTimer;
-function reloadTable() {
-  clearTimeout(filterTimer);
-  filterTimer = setTimeout(function () {
-    table.ajax.reload();
-  }, 300);
-}
+// ================ Reload Table and Manage debounce ================
+const reloadTable = createReload(table); 
 
 $("#searchInput").on("input", reloadTable);
 $("#statusFilter").on("change", reloadTable);

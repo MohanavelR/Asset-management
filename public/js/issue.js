@@ -4,16 +4,18 @@ const esc = (v) => $("<div>").text(v || "-").html();
 // ======================= DataTable =======================
 const table = $("#issueTable").DataTable({
   serverSide: true,
-  processing: false,
+  processing: true,
   ordering: false,
   dom: "lrtip",
   pageLength: 10,
   lengthMenu: [10, 25, 50, 100],
+  language: dataTableMessages( "Issued Assets", "fas fa-box" ),
   ajax: {
     url: "/issuesApi",
     data: function (d) {
       d.query = ($("#searchInput").val() || "").trim();
       d.category = $("#categoryFilter").val() || "";
+      d.branch = $("#branchFilter").val() || "";
     },
     dataSrc: function (res) {
       return res.data;
@@ -28,47 +30,32 @@ const table = $("#issueTable").DataTable({
   ]
 });
 
+// ============= on Loading =============
 table.on("preXhr.dt", function () {
-  $("#issueLoading").removeClass("d-none");
-  $("#issueEmpty").addClass("d-none");
   $("#issueError").addClass("d-none");
 });
 
+// ======= on View=============
 table.on("xhr.dt", function (event, settings, json) {
-  $("#issueLoading").addClass("d-none");
-  if (!json || !json.data || json.data.length === 0) {
-    $("#issueEmpty").removeClass("d-none");
-  } else {
-    $("#issueEmpty").addClass("d-none");
-  }
+   $("#issueError").addClass("d-none");
 });
 
+// =========== on Error ==============
 table.on("error.dt", function () {
-  $("#issueLoading").addClass("d-none");
-  $("#issueEmpty").addClass("d-none");
   $("#issueError").removeClass("d-none");
 });
 
 // ======================= Filters =======================
-let filterTimer;
-function reloadTable() {
-  clearTimeout(filterTimer);
-  filterTimer = setTimeout(() => table.ajax.reload(), 300);
-}
-
+const reloadTable = createReload(table); 
 $("#searchInput").on("input", reloadTable);
-$("#categoryFilter").on("change", reloadTable);
+$("#categoryFilter, #branchFilter").on("change", reloadTable);
 
-$("#resetFilters").on("click", function () {
-  $("#searchInput, #categoryFilter").val("");
-  table.ajax.reload();
-});
 
 // ======================= Modal =======================
 const issueModalEl = document.getElementById("issueModal");
 const issueForm = $("#issueForm");
 
-// open the modal automatically for /issueAsset?assetId=5
+//  =========== Auto Open Model=====================
 if (issueForm.find("select[name=assetId]").val()) {
   bootstrap.Modal.getOrCreateInstance(issueModalEl).show();
 }
@@ -80,10 +67,7 @@ issueForm.on("submit", async (event) => {
 
   try {
     const data = Object.fromEntries(new FormData(event.currentTarget));
-
-    btn.html('<div class="spinner-border spinner-border-sm" role="status"><span class="visually-hidden"></span></div>');
-    btn.prop("disabled", true);
-
+    setButtonLoading(btn, true, "Issue");
     const response = await fetch("/issueAssetApi", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -103,22 +87,21 @@ issueForm.on("submit", async (event) => {
       }
     } else {
       showToast(res_data.message || "Asset issued", "success");
-
-      // the issued asset is no longer In Stock, so remove it from the dropdown
+      // Remove process assets
       issueForm.find("select[name=assetId] option[value='" + data.assetId + "']").remove();
-
+      
       bootstrap.Modal.getOrCreateInstance(issueModalEl).hide();
       table.ajax.reload(null, false);
+    
     }
   } catch (error) {
     showToast(error.message || "Something went wrong", "danger");
   } finally {
-    btn.html("Issue");
-    btn.prop("disabled", false);
+   setButtonLoading(btn, false, "Issue");
+
   }
 });
-
-// reset the form each time the modal closes (date goes back to today)
+// ==== When Close Model get Today and set Today============
 issueModalEl.addEventListener("hidden.bs.modal", function () {
   const today = issueForm.find("input[name=issuedDate]").attr("max");
   issueForm[0].reset();

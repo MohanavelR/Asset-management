@@ -1,11 +1,31 @@
-const { isEmpty,isValidEmail,isValidPhone,cleanString ,isValidDate,formatDate} = require("../helpers/validation");
+const { isEmpty, isValidEmail, isValidPhone, cleanString, isValidDate, formatDate } = require("../helpers/validation");
 const dayjs = require("dayjs");
-const { RETURN_REASONS } = require("../models/issueAsset");
-const { SCRAP_REASONS } = require("../models/asset");
 const logger = require("../helpers/logger");
+const { SCRAP_REASONS, RETURN_REASONS } = require("../config/contants");
 
-const employeeValidation=function(req,res,next){
- try {
+const STATUSES = ["In Stock", "Issued", "Repair", "Scrapped"];
+const OPTIONAL_DATES = [
+  "issuedDate",
+  "returnDate",
+  "scrappedDate",
+  "warrantyStartDate",
+  "warrantyEndDate",
+];
+
+const toId = (value) => {
+  if (typeof value !== "string" && typeof value !== "number") {
+    return null;
+  }
+  if (isEmpty(value)) {
+    return null;
+  }
+  const n = Number(value);
+  return Number.isInteger(n) && n >= 1 ? n : null;
+};
+
+// ========= Employee Validation ===========
+const employeeValidation = function (req, res, next) {
+  try {
     const {
       employeeId,
       name,
@@ -14,53 +34,56 @@ const employeeValidation=function(req,res,next){
       department,
       designation,
       branch,
-      status
+      status,
     } = req.body;
 
-    const errors=[]
+    const errors = [];
 
-    if(isEmpty(employeeId)){
-        errors.push({field:"employee ID",message:"Employee ID"})
+    if (isEmpty(employeeId)) {
+      errors.push({ field: "employee ID", message: "Employee ID" });
     }
+
     if (isEmpty(name)) {
-        errors.push({field: "name",message: "Name is required"})
-    }
-    if (isEmpty(email)) {
-        errors.push({field: "email", message: "Email is required"})
-    }
-    if (!isEmpty(email) && !isValidEmail(email)) {
-        errors.push({field: "email",message: "Please enter a valid email"});
-    }
-    
-    if (isEmpty(phone)) {
-        errors.push({field: "phone",message: "Phone is required"});
-    }
-    
-    if (!isEmpty(phone) && !isValidPhone(phone)) {
-        errors.push({field: "phone",message: "Please enter a valid phone number"})
-    }
-    
-    if (isEmpty(department)) {
-        errors.push({field: "department",message: "Department is required"})
-    }
-    
-    if (isEmpty(designation)) {
-        errors.push({field: "designation",message: "Designation is required"})
-    }
-    
-    if (isEmpty(branch)) {
-        errors.push({field: "branch",message: "Branch is required"});
-    }
-    
-    if (!isEmpty(status) && !["Active", "Inactive"].includes(cleanString(status))) {
-        errors.push({field: "status",message: "Invalid status"});
+      errors.push({ field: "name", message: "Name is required" });
     }
 
-    if (errors.length >0){
-        return res.status(400).json({
+    if (isEmpty(email)) {
+      errors.push({ field: "email", message: "Email is required" });
+    }
+
+    if (!isEmpty(email) && !isValidEmail(email)) {
+      errors.push({ field: "email", message: "Please enter a valid email" });
+    }
+
+    if (isEmpty(phone)) {
+      errors.push({ field: "phone", message: "Phone is required" });
+    }
+
+    if (!isEmpty(phone) && !isValidPhone(phone)) {
+      errors.push({ field: "phone", message: "Please enter a valid phone number" });
+    }
+
+    if (isEmpty(department)) {
+      errors.push({ field: "department", message: "Department is required" });
+    }
+
+    if (isEmpty(designation)) {
+      errors.push({ field: "designation", message: "Designation is required" });
+    }
+
+    if (isEmpty(branch)) {
+      errors.push({ field: "branch", message: "Branch is required" });
+    }
+
+    if (!isEmpty(status) && !["Active", "Inactive"].includes(cleanString(status))) {
+      errors.push({ field: "status", message: "Invalid status" });
+    }
+
+    if (errors.length > 0) {
+      return res.status(400).json({
         success: false,
         message: "Validation failed",
-        errors
+        errors,
       });
     }
 
@@ -75,26 +98,29 @@ const employeeValidation=function(req,res,next){
     if (!isEmpty(status)) {
       req.body.status = cleanString(status);
     }
-    next()
 
- } catch (error) {
-     next(error);
- }
-}
+    next();
+  } catch (error) {
+    next(error);
+  }
+};
 
+// ========= Asset Category Validation ===========
 const assetCategoryValidation = function (req, res, next) {
   try {
-    const {name,desc} = req.body;
+    const { name, desc } = req.body;
 
     const errors = [];
-    const cleanName=isEmpty(name)
+    const cleanName = isEmpty(name);
 
     if (cleanName) {
       errors.push({ field: "name", message: "Category name is required" });
-    } 
-    if (isEmpty(cleanName) && (cleanName.length < 2 || cleanName.length > 100)) {
-      errors.push({field: "name",message: "Category name must be 2-100 characters"})
     }
+
+    if (isEmpty(cleanName) && (cleanName.length < 2 || cleanName.length > 100)) {
+      errors.push({ field: "name", message: "Category name must be 2-100 characters" });
+    }
+
     if (!isEmpty(desc) && typeof desc !== "string") {
       errors.push({ field: "desc", message: "Description must be text" });
     }
@@ -108,6 +134,7 @@ const assetCategoryValidation = function (req, res, next) {
     }
 
     req.body.name = cleanString(name);
+
     if (!isEmpty(desc)) {
       req.body.desc = cleanString(desc);
     }
@@ -118,26 +145,25 @@ const assetCategoryValidation = function (req, res, next) {
   }
 };
 
-// ======================= ASSET =======================
-const STATUSES = ["In Stock", "Issued", "Repair", "Scrapped"];
-const OPTIONAL_DATES = [
-  "issuedDate", "returnDate", "scrappedDate",
-  "warrantyStartDate", "warrantyEndDate",
-];
-
+// ========= Asset Validation ===========
 const assetValidation = function (req, res, next) {
   try {
     const {
-       serial_no, category, make, model,
-      acqDate, acqPrice, vendor, branch, status,
-      specifications, assignedTo,
+      serial_no,
+      category,
+      make,
+      model,
+      acqDate,
+      acqPrice,
+      vendor,
+      branch,
+      status,
+      specifications,
+      assignedTo,
     } = req.body;
 
     const errors = [];
 
-    
-
-    // ---------- Required text ----------
     if (isEmpty(serial_no)) {
       errors.push({ field: "serial_no", message: "Serial number is required" });
     }
@@ -146,23 +172,20 @@ const assetValidation = function (req, res, next) {
     for (const [field, value] of Object.entries(requiredText)) {
       if (isEmpty(value)) {
         errors.push({ field, message: `${field} is required` });
-      } 
+      }
     }
 
-    // ---------- Category ----------
     if (isEmpty(category)) {
       errors.push({ field: "category", message: "Category is required" });
     } else if (!Number.isInteger(Number(category)) || Number(category) < 1) {
       errors.push({ field: "category", message: "Please select a valid category" });
     }
 
-    // ---------- Price ----------
     if (isEmpty(acqPrice)) {
-      errors.push({ field: "acqPrice", message: "Acquisition price is required" });
+      errors.push({ field: "acqPrice", message: "Purchase price is required" });
     } else if (isNaN(Number(acqPrice)) || Number(acqPrice) < 0) {
       errors.push({ field: "acqPrice", message: "Price must be a number, 0 or more" });
     }
-
 
     const cleanStatus = isEmpty(status) ? null : cleanString(String(status));
     if (cleanStatus && !STATUSES.includes(cleanStatus)) {
@@ -178,18 +201,16 @@ const assetValidation = function (req, res, next) {
       }
     }
 
-    // ---------- Acquisition date (required) ----------
     let acq = null;
     if (isEmpty(acqDate)) {
-      errors.push({ field: "acqDate", message: "Acquisition date is required" });
+      errors.push({ field: "acqDate", message: "Purchase date is required" });
     } else if (!isValidDate(String(acqDate))) {
       errors.push({ field: "acqDate", message: "Please enter a valid date" });
     } else {
-      acq = formatDate(acqDate, 1); // YYYY-MM-DD
+      acq = formatDate(acqDate, 1);
     }
 
-    // ---------- Optional dates ----------
-    const d = {}; // cleaned values, null when empty
+    const d = {};
     for (const field of OPTIONAL_DATES) {
       const value = req.body[field];
       if (isEmpty(value)) {
@@ -202,7 +223,6 @@ const assetValidation = function (req, res, next) {
       }
     }
 
-    // ---------- Rules between fields ----------
     if (cleanStatus === "Issued") {
       if (!d.issuedDate && isEmpty(req.body.issuedDate)) {
         errors.push({ field: "issuedDate", message: "Issued date is required when status is Issued" });
@@ -211,17 +231,15 @@ const assetValidation = function (req, res, next) {
         errors.push({ field: "assignedTo", message: "Assigned employee is required when status is Issued" });
       }
     }
+
     if (cleanStatus === "Scrapped" && !d.scrappedDate && isEmpty(req.body.scrappedDate)) {
       errors.push({ field: "scrappedDate", message: "Scrapped date is required when status is Scrapped" });
     }
-    
 
-    // ---------- Optional text ----------
     if (!isEmpty(specifications) && typeof specifications !== "string") {
       errors.push({ field: "specifications", message: "Specifications must be text" });
     }
 
-    // ---------- Stop if any error ----------
     if (errors.length > 0) {
       return res.status(400).json({ success: false, message: "Validation failed", errors });
     }
@@ -234,11 +252,14 @@ const assetValidation = function (req, res, next) {
     req.body.acqPrice = Number(acqPrice);
     req.body.vendor = cleanString(String(vendor));
     req.body.branch = cleanString(String(branch));
-    if (cleanStatus) req.body.status = cleanStatus;
 
-    req.body.assignedTo = assigned; 
+    if (cleanStatus) {
+      req.body.status = cleanStatus;
+    }
+
+    req.body.assignedTo = assigned;
     for (const field of OPTIONAL_DATES) {
-      req.body[field] = d[field];  
+      req.body[field] = d[field];
     }
     req.body.specifications = isEmpty(specifications) ? null : cleanString(specifications);
 
@@ -248,51 +269,39 @@ const assetValidation = function (req, res, next) {
   }
 };
 
-
-
-
-const toId = (value) => {
-  if (typeof value !== "string" && typeof value !== "number") return null;
-  if (isEmpty(value)) return null;
-  const n = Number(value);
-  return Number.isInteger(n) && n >= 1 ? n : null;
-};
-
+// ========= Issue Validation ===========
 const issueValidation = function (req, res, next) {
-  logger.debug(dayjs().format("YYYY-MM-DD"))
-  logger.debug(req.body.issuedDate)
+  logger.debug(dayjs().format("YYYY-MM-DD"));
+  logger.debug(req.body.issuedDate);
+
   try {
     const { assetId, employeeId, issuedDate, remarks } = req.body;
     const errors = [];
 
-    // ---------- Asset ----------
     const asset = toId(assetId);
     if (!asset) {
       errors.push({ field: "assetId", message: "Please select an asset" });
     }
 
-    // ---------- Employee ----------
     const employee = toId(employeeId);
     if (!employee) {
       errors.push({ field: "employeeId", message: "Please select an employee" });
     }
 
-    // ---------- Issue date (empty means today) ----------
     const todayStr = dayjs().format("YYYY-MM-DD");
     let date = todayStr;
+
     if (!isEmpty(issuedDate)) {
       if (!isValidDate(String(issuedDate))) {
         errors.push({ field: "issuedDate", message: "Please enter a valid date" });
       } else {
         date = formatDate(issuedDate, 1);
-        
         if (date > todayStr) {
           errors.push({ field: "issuedDate", message: "Issue date cannot be in the future" });
         }
       }
     }
 
-    // ---------- Remarks (optional) ----------
     if (!isEmpty(remarks)) {
       if (typeof remarks !== "string") {
         errors.push({ field: "remarks", message: "Remarks must be text" });
@@ -301,12 +310,10 @@ const issueValidation = function (req, res, next) {
       }
     }
 
-    // ---------- Stop if any error ----------
     if (errors.length > 0) {
       return res.status(400).json({ success: false, message: "Validation failed", errors });
     }
 
-    // ---------- Clean values for the controller ----------
     req.body.assetId = asset;
     req.body.employeeId = employee;
     req.body.issuedDate = date;
@@ -318,7 +325,7 @@ const issueValidation = function (req, res, next) {
   }
 };
 
-
+// ========= Return Validation ===========
 const returnValidation = function (req, res, next) {
   try {
     const { assetId, reason, returnDate, remarks } = req.body;
@@ -326,7 +333,9 @@ const returnValidation = function (req, res, next) {
     const todayStr = dayjs().format("YYYY-MM-DD");
 
     const asset = toId(assetId);
-    if (!asset) errors.push({ field: "assetId", message: "Please select an asset" });
+    if (!asset) {
+      errors.push({ field: "assetId", message: "Please select an asset" });
+    }
 
     const cleanReason = isEmpty(reason) ? "" : cleanString(reason);
     if (!cleanReason) {
@@ -337,7 +346,7 @@ const returnValidation = function (req, res, next) {
       errors.push({ field: "remarks", message: "Please explain the reason in remarks" });
     }
 
-    let date = todayStr; // empty means today
+    let date = todayStr;
     if (!isEmpty(returnDate)) {
       if (!isValidDate(String(returnDate))) {
         errors.push({ field: "returnDate", message: "Please enter a valid date" });
@@ -364,15 +373,15 @@ const returnValidation = function (req, res, next) {
     req.body.assetId = asset;
     req.body.reason = cleanReason;
     req.body.returnDate = date;
-    
     req.body.remarks = isEmpty(remarks) ? null : cleanString(remarks);
+
     next();
   } catch (error) {
     next(error);
   }
 };
 
-
+// ========= Scrap Validation ===========
 const scrapValidation = function (req, res, next) {
   try {
     const { assetId, reason, scrappedDate, remarks } = req.body;
@@ -380,7 +389,9 @@ const scrapValidation = function (req, res, next) {
     const todayStr = dayjs().format("YYYY-MM-DD");
 
     const asset = toId(assetId);
-    if (!asset) errors.push({ field: "assetId", message: "Please select an asset" });
+    if (!asset) {
+      errors.push({ field: "assetId", message: "Please select an asset" });
+    }
 
     const cleanReason = isEmpty(reason) ? "" : cleanString(reason);
     if (!cleanReason) {
@@ -391,7 +402,7 @@ const scrapValidation = function (req, res, next) {
       errors.push({ field: "remarks", message: "Please explain the reason in remarks" });
     }
 
-    let date = todayStr; // empty means today
+    let date = todayStr;
     if (!isEmpty(scrappedDate)) {
       if (!isValidDate(String(scrappedDate))) {
         errors.push({ field: "scrappedDate", message: "Please enter a valid date" });
@@ -419,13 +430,18 @@ const scrapValidation = function (req, res, next) {
     req.body.reason = cleanReason;
     req.body.scrappedDate = date;
     req.body.remarks = isEmpty(remarks) ? null : cleanString(remarks);
+
     next();
   } catch (error) {
     next(error);
   }
 };
 
-
-
-
-module.exports = {returnValidation,scrapValidation ,employeeValidation, assetCategoryValidation, assetValidation,issueValidation };
+module.exports = {
+  returnValidation,
+  scrapValidation,
+  employeeValidation,
+  assetCategoryValidation,
+  assetValidation,
+  issueValidation,
+};

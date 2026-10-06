@@ -8,6 +8,7 @@ const table = $("#stockTable").DataTable({
   dom: "lrtip",
   pageLength: 10,
   lengthMenu: [10, 25, 50, 100],
+  language: dataTableMessages( "Stack Assets", "fas fa-box" ),
   ajax: {
     url: "/stockApi",
     data: function (d) {
@@ -28,15 +29,15 @@ const table = $("#stockTable").DataTable({
   ]
 });
 
+// ============= on Loading =============
 table.on("preXhr.dt", function () {
-  $("#stockLoading").removeClass("d-none");
-  $("#stockEmpty").addClass("d-none");
   $("#stockError").addClass("d-none");
 });
 
+// ======= on View=============
 table.on("xhr.dt", function (event, settings, json) {
-  $("#stockLoading").addClass("d-none");
 
+ $("#stockError").addClass("d-none");
   const totals = (json && json.totals) || { total: 0, value: 0 };
   $("#footLabel").text("Total (" + totals.total + " assets in stock)");
   $("#footValue").text(money(totals.value));
@@ -52,28 +53,15 @@ table.on("xhr.dt", function (event, settings, json) {
     </div>`);
   $("#branchTotals").html(cards.join(""));
 
-  if (!json || !json.data || json.data.length === 0) {
-    $("#stockEmpty").removeClass("d-none");
-  } else {
-    $("#stockEmpty").addClass("d-none");
-  }
 });
-
+// =========== on Error ==============
 table.on("error.dt", function () {
-  $("#stockLoading").addClass("d-none");
-  $("#stockEmpty").addClass("d-none");
   $("#stockError").removeClass("d-none");
 });
 
-let filterTimer;
-function reloadTable() {
-  clearTimeout(filterTimer);
-  filterTimer = setTimeout(function () { table.ajax.reload(); }, 300);
-}
+// ================ Reload Table and Manage debounce ================
+const reloadTable = createReload(table); 
+
 $("#searchInput").on("input", reloadTable);
 $("#categoryFilter, #branchFilter").on("change", reloadTable);
 
-$("#resetFilters").on("click", function () {
-  $("#searchInput, #categoryFilter, #branchFilter").val("");
-  table.ajax.reload();
-});

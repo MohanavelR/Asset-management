@@ -109,7 +109,22 @@
 *{
   font-family:var(--app-font-family);
 }
-/* Form */
+/*==========Common============*/
+.error-text{
+  font-size: 14px;
+  transition-duration: 5s;
+} 
+.required-field .form-label::after{
+  content:"*";
+  color: rgb(178, 15, 15);
+}
+
+#main-content-user  {
+padding-left:250px ;
+}
+
+               /* --Form-- */
+
 /* ============ Form wrapper ============ */
 .form {
   font-family: var(--app-font-family);
@@ -189,44 +204,21 @@
   color: var(--app-text-primary);
 }
 
-/* ============ Validation ============ */
-.form-control.is-invalid,
-.form-select.is-invalid { border-color: var(--app-danger); }
-
-.form-control.is-valid,
-.form-select.is-valid { border-color: var(--app-success); }
-
-.invalid-feedback { color: var(--app-danger); }
-.valid-feedback   { color: var(--app-success); }
-
-/* Login */
-
-.login-form .form-group .password-icon{
-  top: 55%;
-  right: 10px;
-}
-.login-form .form-group .password-icon i{
-  font-size: 14px;
-  cursor: pointer;
-}
-.error-text{
-  font-size: 14px;
-  transition-duration: 5s;
-} 
+/*================Aside Container====================*/
 #sidebarMenu {
     height: 100vh;
     overflow: auto;
-  }
+}
 .offcanvas-body .nav .menu-item{
   border-radius: 5px;
-  color: black;
+  color: var(--app-text-secondary);
 }  
 .offcanvas-body .nav .menu-item:hover{
-  background-color:rgb(228, 241, 237);
+  background-color:var(--app-bg-tertiary);
   border-radius: 5px;
 }  
 .offcanvas-body .nav .menu-item a{
-    color: black;
+    color: var(--app-text-primary);
     display: flex;
 }
 .offcanvas-body .nav .menu-item a.active{
@@ -237,7 +229,7 @@
 .offcanvas-body .nav .menu-item a i{
     margin-top: 3px;
 }
-/* Clickable section heading */
+
 .sidebar-alt .menu-toggle {
   display: flex;
   align-items: center;
@@ -247,7 +239,7 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.1em;
-  color: #6b7280;
+  color: var(--app-text-tertiary);
   text-decoration: none;
   cursor: pointer;
 }
@@ -255,7 +247,6 @@
   color: #4338ca;
 }
 
-/* Arrow rotates when closed */
 .sidebar-alt .chevron {
   font-size: 0.65rem;
   transition: transform 0.25s ease;
@@ -263,22 +254,27 @@
 .sidebar-alt .menu-toggle.collapsed .chevron {
   transform: rotate(-90deg);
 }
-#categoryTable th.category-desc,
-#categoryTable td.category-desc {
-    width: 100px !important;
-    max-width: 100px !important;
+
+/*=================Login==================*/
+
+.login-form .form-group .password-icon{
+  top: 55%;
+  right: 10px;
+}
+.login-form .form-group .password-icon i{
+  font-size: 14px;
+  cursor: pointer;
 }
 
-.required-field .form-label::after{
-  content:"*";
-  color: rgb(178, 15, 15);
+/* =========== Employee Details =================== */
+.avatar {
+  width: 40%;
+  height: 130px;
+  font-size: 32px;
+  font-weight: 600;
 }
 
-
-#main-content-user  {
-padding-left:250px ;
-}
-
+/*====================TimeLine======================= */
 .tl {
   list-style: none;
   margin: 0;
@@ -323,7 +319,7 @@ padding-left:250px ;
 }
 
 @media (max-width: 768px) {
-   #main-content-user  {
+#main-content-user  {
  padding: 1.5rem !important;
 } 
 } 

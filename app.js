@@ -1,98 +1,109 @@
-// config for env file Data access
-require("dotenv").config()
+require("dotenv").config();
 
-const express=require("express")
-const cookieParser=require("cookie-parser")
-const {onDB}=require("./config/db")
-const logger=require("./helpers/logger")
-const path=require("path")
-const ROOT_PATH=require("./utils/projectPath")
-const createAdmin = require("./helpers/createAdmin")
-// routes
+const express = require("express");
+const cookieParser = require("cookie-parser");
+const path = require("path");
 
-const authRouter=require("./routers/authRoutes")
-const userRouter=require("./routers/userRoutes")
-const employeeRouter=require("./routers/employeeRoutes")
-const assetRouter=require("./routers/assetsRoutes")
-const stockRouter=require("./routers/stockRoutes")
-const categoryRouter=require("./routers/assetCategory")
-const issueAssetRouter=require("./routers/issueAssetRoutes")
-const returnAssetRouter=require("./routers/returnAssetRoutes")
-const scrapAssetRouter=require("./routers/scrapAssetRoutes")
-const assetHistoryRouter=require("./routers/assetHistory")
+const { onDB } = require("./config/db");
+const logger = require("./helpers/logger");
+const ROOT_PATH = require("./utils/projectPath");
+const createAdmin = require("./helpers/createAdmin");
+const { BRANCHES } = require("./config/contants");
 
-const authMiddleWare = require("./middleware/authMiddleware")
-const apiErrorHandler = require("./helpers/apiErrorHandler")
+// ========= Routers ===========
+const authRouter = require("./routers/authRoutes");
+const userRouter = require("./routers/userRoutes");
+const employeeRouter = require("./routers/employeeRoutes");
+const assetRouter = require("./routers/assetsRoutes");
+const stockRouter = require("./routers/stockRoutes");
+const categoryRouter = require("./routers/assetCategory");
+const issueAssetRouter = require("./routers/issueAssetRoutes");
+const returnAssetRouter = require("./routers/returnAssetRoutes");
+const scrapAssetRouter = require("./routers/scrapAssetRoutes");
+const assetHistoryRouter = require("./routers/assetHistory");
 
-// create app 
-function create_app(){
+// ========= Middlewares ===========
+const authMiddleWare = require("./middleware/authMiddleware");
+const apiErrorHandler = require("./helpers/apiErrorHandler");
+
+// ========= Create App ===========
+function create_app() {
   try {
-    
-    const APP= express()
-    //set template engine   
-    APP.set("view engine","jade")
-    APP.use(express.json())
-    APP.use(express.urlencoded({extended:true}))
-    APP.use(cookieParser())
-    //set templates files   
-    APP.set("views",path.join(ROOT_PATH,"templates"))
-    // set css file access  
-    APP.use(express.static(path.join(ROOT_PATH,"public")))
-    
+    const APP = express();
 
-  // 
+    // Template engine setup
+    APP.set("view engine", "jade");
+    APP.set("views", path.join(ROOT_PATH, "templates"));
+
+    // Middlewares & Static files
+    APP.use(express.json());
+    APP.use(express.urlencoded({ extended: true }));
+    APP.use(cookieParser());
+    APP.use(express.static(path.join(ROOT_PATH, "public")));
+
+    // Logger middleware
     APP.use((req, res, next) => {
-    logger.info(`${req.method} http://${req.get("host")}${req.originalUrl}`);
+      logger.info(`${req.method} http://${req.get("host")}${req.originalUrl}`);
       next();
     });
 
+    // App locals
+    APP.locals.branches = BRANCHES;
 
-    APP.use(authMiddleWare)
-    APP.get("/",(req,res)=>{
-      res.render("loading")
-    })
-    APP.use("/",authRouter)
-    APP.use("/",userRouter)
-    APP.use("/",assetRouter)
-    APP.use("/",employeeRouter)
-    APP.use("/",categoryRouter)
-    APP.use("/",stockRouter)
-    APP.use("/",issueAssetRouter)
-    APP.use("/",returnAssetRouter)
-    APP.use("/",scrapAssetRouter)
-    APP.use("/",assetHistoryRouter)
-    APP.use(apiErrorHandler)
-    return APP
+    // Authentication middleware
+    APP.use(authMiddleWare);
+
+    // Default route
+    APP.get("/", (req, res) => {
+      res.render("loading");
+    });
+
+    // Routes
+    APP.use("/", authRouter);
+    APP.use("/", userRouter);
+    APP.use("/", assetRouter);
+    APP.use("/", employeeRouter);
+    APP.use("/", categoryRouter);
+    APP.use("/", stockRouter);
+    APP.use("/", issueAssetRouter);
+    APP.use("/", returnAssetRouter);
+    APP.use("/", scrapAssetRouter);
+    APP.use("/", assetHistoryRouter);
+
+    
+    APP.use((req, res, next) => {
+      res.status(404).render("error", { error: { message: "Page Not Found", statusCode: 404 } });
+    });
+
+    // Error handler
+    APP.use(apiErrorHandler);
+
+    return APP;
   } catch (error) {
-     logger.error(`${error}`);
+    logger.error(`${error}`);
   }
 }
-// ---------------
 
-const app=create_app()
+const app = create_app();
 
+// ========= Start Server ===========
+async function startServer() {
+  try {
+    await onDB();
+    await createAdmin();
 
-// Create server
-async function startServer(){
- try {
-   await onDB() 
-   
-   await createAdmin()
-   const PORT = process.env.PORT || 3000; 
-   const HOST = process.env.HOST || "localhost"; 
+    const PORT = process.env.PORT || 3000;
+    const HOST = process.env.HOST || "localhost";
 
-   app.listen(PORT, HOST, () => { 
-   logger.info( `Server started successfully URL: http://${HOST}:${PORT}` )
-})
- } catch (error) {
-   logger.error(`Failed to start server: ${error.message}`);
-   process.exit(1);
- }
-}
-// ---------------------
-   
-if(require.main===module){
- startServer()  
+    app.listen(PORT, HOST, () => {
+      logger.info(`Server started successfully URL: http://${HOST}:${PORT}`);
+    });
+  } catch (error) {
+    logger.error(`Failed to start server: ${error.message}`);
+    process.exit(1);
+  }
 }
 
-
+if (require.main === module) {
+  startServer();
+}

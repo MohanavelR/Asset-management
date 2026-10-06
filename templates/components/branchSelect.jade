@@ -1,0 +1,8 @@
+mixin branchSelect(opts)
+  - const o = Object.assign({ name: 'branch', label: 'Branch', required: false, placeholder: 'Select Branch' }, opts)
+  if o.label
+    label.form-label(for=o.name)= o.label
+  select.form-select(name=o.name, id=o.id)&attributes(attributes)
+    option(value='' disabled=o.required selected=!o.selected)= o.placeholder
+    each b in branches
+      option(value=b selected=(b === o.selected))= b
