@@ -3,7 +3,7 @@ const money = (v) =>
 
 const table = $("#stockTable").DataTable({
   serverSide: true,
-  processing: false,
+  processing: true,
   ordering: false,
   dom: "lrtip",
   pageLength: 10,
