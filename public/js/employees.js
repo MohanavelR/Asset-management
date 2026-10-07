@@ -1,7 +1,8 @@
 
 const table=$("#employeeTable").DataTable({
-   serverSide:true,
-   processing:true,
+   serverSide: true,
+   processing: true,
+   ordering: false,
    dom:"lrtip",
    pageLength:10,
    lengthMenu:[10,25,50,100],

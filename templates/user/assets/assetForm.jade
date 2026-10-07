@@ -2,6 +2,7 @@ extends ../../layout/userLayout
 include ../../components/formInput
 include ../../components/formSelect
 include ../../components/formTextarea
+include ../../components/branchSelect
 
 block userContent
 
@@ -106,10 +107,9 @@ block userContent
 
       //- ====== Branch ======
       .col-lg-4.col-md-6.form-group.required-field
-        +formSelect({
+        +branchSelect({
           label: 'Branch',
           name: 'branch',
-          options: branches,
           selected: a.branch,
           required: true,
           placeholder: 'Select branch'

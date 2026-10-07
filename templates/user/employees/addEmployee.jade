@@ -125,7 +125,7 @@ block scripts
          }) 
          const res_data=await response.json()
          
-         console.log(res_data)
+        
          if (!res_data.success) {
             if (Array.isArray(res_data.errors) && res_data.errors.length) {
               showToasts(res_data.errors.map(e => e.message));

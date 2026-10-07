@@ -3,6 +3,7 @@ include ../../components/formInput
 include ../../components/formSelect
 include ../../components/formTextarea
 include ../../components/branchSelect
+include ../../components/searchBox
 
 block title
   title Stock View | Asset Management
@@ -23,13 +24,11 @@ block userContent
     .row.g-2.mb-3
       //-========= Search Filter ========
       .col-lg-4.col-md-12
-        +formInput({
-          id: 'searchInput',
-          name: 'search',
-          type: 'search',
-          label:"Search",
-          placeholder: 'Search by tag, serial no, make or model'
-        })
+          +searchBox({
+             id: 'searchInput',
+             label: 'Search',
+             placeholder: 'Search by tag, serial no, make, model...',
+          })
 
       //============Category Filter ========
       .col-lg-3.col-md-6
@@ -41,15 +40,7 @@ block userContent
           placeholder: 'All Categories'
         })
 
-      //-=========== Branch Filter ========
-      //- .col-lg-3.col-md-6
-      //-   +formSelect({
-      //-     id: 'branchFilter',
-      //-     name: 'branch',
-      //-     options: branches,
-      //-     "label":"Branch",
-      //-     placeholder: 'All Branches'
-      //-   })
+      
       .col-lg-3.col-md-6 
                 +branchSelect({ 
                   placeholder: 'Select branch' ,

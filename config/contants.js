@@ -16,7 +16,8 @@ const HISTORY_ACTIONS = [
     "Issued", 
     "Returned", 
     "Re-stocked", 
-    "Scrapped"
+    "Scrapped",
+    "Returned & Re-stocked"
 ];
 const RETURN_REASONS = [
     "Upgrade", 

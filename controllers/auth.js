@@ -2,6 +2,7 @@ const {User} =require("../models/index")
 const { Op } = require("sequelize")
 const logger = require("../helpers/logger")
 const { generateToken } = require("../helpers/token")
+const { sendEmail } = require("../config/emailSender")
 
 
 // ========= Login ===========
@@ -87,6 +88,14 @@ exports.forgotPassword = async function (req, res) {
         }
 
         const otp = await user.setForgotOtp()
+        await sendEmail({
+         to: user.email,
+         subject: "Your password reset OTP",
+         text: `Your OTP is ${otp}. It is valid for 10 minutes.`,
+         html: `<p>Your OTP is <b style="font-size:20px">${otp}</b>.</p>
+                <p>It is valid for 10 minutes. If you didn't request this, ignore this email.</p>`,
+         });
+
         return res.status(200).json({
             message: "otp sent",
             success: true,

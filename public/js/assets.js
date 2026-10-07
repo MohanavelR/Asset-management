@@ -12,6 +12,7 @@ const table = $("#assetTable").DataTable({
       d.query = ($("#searchInput").val() || "").trim();
       d.status = $("#statusFilter").val() || "";
       d.category = $("#categoryFilter").val() || "";
+      d.branch=($("#branchFilter").val()|| "" ).trim()
     },
     dataSrc: function (res) {
       return res.data;
@@ -73,5 +74,4 @@ table.on("error.dt", function () {
 const reloadTable = createReload(table); 
 
 $("#searchInput").on("input", reloadTable);
-$("#statusFilter").on("change", reloadTable);
-$("#categoryFilter").on("change", reloadTable);
+$("#categoryFilter,#branchFilter,#statusFilter").on("change", reloadTable);

@@ -21,13 +21,19 @@ const apiErrorHandler =function (err, req, res, next)  {
     });
   }
 
-  if (err.name === "SequelizeForeignKeyConstraintError") {
-    const isDelete=req.method==="DELETE"
-    return res.status(400).json({
-      success: false,
-      message: isDelete?"Cannot Delete":"Invalid reference",
-      errors: [{message: isDelete ?"This category is in use by existing assets":"Referenced record does not exist" }]});
-  }
+if (err.name === "SequelizeForeignKeyConstraintError") {
+  const detail = err.parent?.detail || "";
+  const inUse = detail.includes("is still referenced");
+  return res.status(409).json({
+    success: false,
+    message: inUse ? "Cannot delete" : "Invalid reference",
+    errors: [{
+      message: inUse
+        ? "This record is in use by existing records"
+        : "Referenced record does not exist",
+    }],
+  });
+}
 
   res.status(err.statusCode || 500).json({
     success: false,

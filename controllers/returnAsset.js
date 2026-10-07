@@ -133,69 +133,83 @@ exports.returnsApi = async function (req, res, next) {
 };
 
 // ========= Return Asset ===========
+
 exports.returnAsset = async function (req, res, next) {
   try {
-    const { assetId, reason, returnDate, remarks } = req.body;
+    const assetId = Number(req.body.assetId);
+    const { reason, returnDate, remarks } = req.body;
+
+    if (!Number.isInteger(assetId) || assetId < 1) {
+      return res.status(400).json({ 
+        success: false, 
+        message: "Please select an asset" 
+      });
+    }
+    const isResignation = reason === "Resignation";
 
     const failed = await sequelize.transaction(async (t) => {
-      
-      const asset = await Asset.findByPk(assetId, { 
-          transaction: t, 
-          lock: t.LOCK.UPDATE 
-        });
-      if (!asset){
-        return { status: 404, message: "Asset not found" };
-      } 
-      if (asset.status !== "Issued"){
-        return { status: 400, message: "Only issued assets can be returned" };
+      const asset = await Asset.findByPk(assetId, {
+        transaction: t,
+        lock: t.LOCK.UPDATE,
+      });
+      if (!asset) {
+        return { 
+          status: 404, 
+          message: "Asset not found" 
+        };
+      }
+      if (asset.status !== "Issued") {
+        return { 
+          status: 400, 
+          message: "Only issued assets can be returned" };
       }
 
-      
       const issue = await AssetIssue.findOne({
         where: { assetId: asset.id, returnDate: null },
         transaction: t,
         lock: t.LOCK.UPDATE,
       });
-      if (!issue){
-         return { status: 400, message: "No open issue found for this asset" };
-      } 
+      if (!issue) {
+        return { status: 400, message: "No open issue found for this asset" };
+      }
 
-     
       if (returnDate < issue.issueDate) {
         return { status: 400, message: "Return date cannot be before the issue date" };
       }
 
-      
-      await issue.update(
-        { 
-          returnDate, 
-          returnReason: reason, 
-          returnRemarks: remarks, 
-          returnedBy: req.user.id 
-        },
-        { transaction: t }
-      );
-
-      
-      // if Resignation set In stock if Not Set Retuned 
       const employeeId = issue.employeeId;
-      const newStatus = reason === "Resignation" ? "In Stock" : "Returned";
-
       
+      const newStatus = isResignation ? "In Stock" : "Returned";
+
+      if (isResignation) {
+          await issue.destroy({ transaction: t });
+      } else {
+        await issue.update(
+          {
+            returnDate,
+            returnReason: reason,
+            returnRemarks: remarks,
+            returnedBy: req.user.id,
+          },
+          { transaction: t }
+        );
+      }
+
       await asset.update(
         {
           status: newStatus,
           assignedTo: null,
-          returnDate,
+          ...(isResignation
+            ? { issuedDate: null, returnDate: null }
+            : { returnDate }),
         },
         { transaction: t }
       );
 
-      // history row for the Returned action
       await logHistory(
         {
           assetId: asset.id,
-          action: "Returned",
+          action: isResignation ? "Returned & Re-stocked" : "Returned",
           actionDate: returnDate,
           fromStatus: "Issued",
           toStatus: newStatus,
@@ -211,13 +225,10 @@ exports.returnAsset = async function (req, res, next) {
     });
 
     if (failed) {
-      return res.status(failed.status).json({
-        success: false,
-        message: failed.message,
-      });
+      return res.status(failed.status).json({ success: false, message: failed.message });
     }
 
-    return res.status(200).json({ success: true, message: "Asset returned successfully" });
+    return res.status(200).json({ success: true, message:isResignation?"Asset is back In Stock Status" :"Asset returned successfully" });
   } catch (error) {
     next(error);
   }

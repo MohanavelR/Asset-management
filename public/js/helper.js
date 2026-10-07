@@ -1,14 +1,15 @@
 // ========= Table Messages=========================
 function dataTableMessages(item = "records", icon = "fa-solid fa-folder-open") {
     return {
-        processing: `
-            <div class="py-3 text-center">
-                <div class="spinner-border app-text-primary" role="status"></div>
-                <div class="mt-2 app-text-tertiary">
-                    Loading ${item}...
-                </div>
-            </div>
-        `,
+        loadingRecords: "&nbsp;",
+        // processing: `
+        //     <div class="py-3 text-center">
+        //         <div class="spinner-border app-text-primary" role="status"></div>
+        //         <div class="mt-2 app-text-tertiary">
+        //             Loading ${item}...
+        //         </div>
+        //     </div>
+        // `,
         emptyTable: `
             <div class="py-4 text-center app-text-tertiary">
                 <i class="${icon} fs-3 mb-2"></i>
@@ -99,4 +100,13 @@ function createReload(table, delay = 300) {
     return debounce(function () {
         table.ajax.reload();
     }, delay);
+}
+
+
+function showApiError(res_data) {
+  if (Array.isArray(res_data.errors) && res_data.errors.length) {
+    showToasts(res_data.errors.map(e => e.message));
+  } else {
+    showToast(res_data.message || "Something went wrong", "danger");
+  }
 }

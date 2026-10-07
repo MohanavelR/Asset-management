@@ -1,7 +1,7 @@
 const dayjs = require("dayjs");
 const { Op } = require("sequelize");
 const logger = require("../helpers/logger");
-const {AssetCategory,Employee,Asset} =require("../models/index")
+const {AssetCategory,Employee,Asset,AssetIssue} =require("../models/index")
 const { sequelize } = require("../config/db");
 const { logHistory } = require("../helpers/logHistory");
 const { SCRAP_REASONS } = require("../config/contants");
@@ -154,8 +154,15 @@ exports.restockAsset = async function (req, res, next) {
         throw new Error("Only assets in Repair can be re-stocked (current: " + asset.status + ")");
       }
 
-      await asset.update({ status: "In Stock", assignedTo: null }, { transaction: t });
-
+      await asset.update({ 
+        status: "In Stock", 
+        assignedTo: null 
+      }, { transaction: t });
+      
+      await AssetIssue.destroy({
+        where: { assetId: id },
+        transaction: t,
+      });
       await logHistory({
         assetId: asset.id,
         action: "Re-stocked",

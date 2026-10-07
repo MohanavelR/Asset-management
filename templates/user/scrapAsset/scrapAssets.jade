@@ -3,6 +3,7 @@ include ../../components/branchSelect
 include ../../components/formInput
 include ../../components/formSelect
 include ../../components/formTextarea
+include ../../components/searchBox
 
 block title
     title Scrap Assets | Asset Management
@@ -27,12 +28,10 @@ block userContent
         .row.g-2.mb-3
             //-============ Search Filter ========
             .col-lg-4.col-md-12
-                +formInput({
-                    id: 'searchInput',
-                    label: 'Search',
-                    name: 'search',
-                    type: 'search',
-                    placeholder: 'Tag, serial no, make, model or branch'
+                +searchBox({
+                   id: 'searchInput',
+                   label: 'Search',
+                   placeholder: 'Search by tag, serial no, make, model...',
                 })
 
             //-============ Category Filter ========

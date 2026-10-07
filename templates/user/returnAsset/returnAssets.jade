@@ -3,6 +3,7 @@ include ../../components/branchSelect
 include ../../components/formInput
 include ../../components/formSelect
 include ../../components/formTextarea
+include ../../components/searchBox
 
 block title
     title Return Assets | Asset Management
@@ -26,16 +27,13 @@ block userContent
         .row.g-2.mb-3
             //-============ Search Filter ========
             .col-lg-4.col-md-12
-                +formInput({
-                    id: 'searchInput',
-                    label: 'Search',
-                    name: 'search',
-                    type: 'search',
-                    placeholder: 'Tag, serial no, make, model or employee'
+                +searchBox({
+                   id: 'searchInput',
+                   label: 'Search',
+                   placeholder: 'Search by tag, serial no, make, model...',
                 })
-
             //-============ Category Filter ========
-            .col-lg-3.col-md-6
+            .col-lg-2.col-md-6
                 +formSelect({
                     id: 'categoryFilter',
                     label: 'Category',
@@ -45,7 +43,7 @@ block userContent
                 })
             
             //-============ Branch Filter ========
-            .col-lg-3.col-md-6
+            .col-lg-2.col-md-6
                 +branchSelect({
                     id: 'branchFilter',
                     label: 'Branch',
@@ -54,7 +52,7 @@ block userContent
 
 
             //-============ Reason Filter ========
-            .col-lg-3.col-md-6
+            .col-lg-2.col-md-6
                 +formSelect({
                     id: 'reasonFilter',
                     label: 'Reason',
@@ -64,7 +62,7 @@ block userContent
                 })
 
             //- ======== Reset Filters ========
-            .col-lg-2.col-md-12.d-flex.flex-column.gap-1
+            .col-lg-1.col-md-12.d-flex.flex-column.gap-1
                 label.form-label.mb-0 Reset
                 button#resetFilters.btn.btn-light.border.w-100(type='button', title='Reset')
                     i.fa-solid.fa-rotate-left

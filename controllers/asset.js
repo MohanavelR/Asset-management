@@ -128,9 +128,12 @@ exports.assetsApi = async function (req, res, next) {
     const draw = parseInt(req.query.draw) || 1;
     const start = Math.max(parseInt(req.query.start) || 0, 0);
     const length = Math.min(Math.max(parseInt(req.query.length) || 10, 1), 100);
-    const { query, status, category} = req.query;
+    const { query, status, category,branch} = req.query;
 
     const where = {};
+    if(branch){
+      where.branch=branch
+    }
 
     // search box
     if (query && query.trim()) {
@@ -141,7 +144,6 @@ exports.assetsApi = async function (req, res, next) {
         { make: { [Op.iLike]: q } },
         { model: { [Op.iLike]: q } },
         { vendor: { [Op.iLike]: q } },
-        { branch: { [Op.iLike]: q } },
       ];
     }
     // dropdown filters

@@ -2,23 +2,23 @@ extends ./base
 
 block content
   //-================NavBar=================== 
-  nav.navbar.app-bg-secondary.position-sticky.top-0.z-3.border-bottom
+  nav.navbar.app-bg-secondary.position-sticky.top-0.z-3.border-bottom.px-3
     div.container-fluid
       div.d-flex.align-items-center.justify-content-between.gap-2.w-100
         div 
           button.btn.app-text-primary.d-md-none(type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebarMenu" aria-controls="sidebarMenu" aria-label="Toggle menu") ☰
-          a.navbar-brand.d-none.d-md-block.app-text-primary.fs-2(href="/") #{appName}
+          a.navbar-brand.d-none.d-md-block.app-text-primary.fw-bold.fs-2(href="/") #{appName}
         div.dropdown
-        div.d-flex.gap-2.align-items-center.dropdown-toggle.app-bg-tertiary.px-3.py-1.app-border-tertiary.rounded-pill(
-            data-bs-toggle="dropdown"
-            aria-expanded="false"
-            role="button"
-        )
+          div.d-flex.gap-2.align-items-center.dropdown-toggle.app-bg-tertiary.px-3.py-1.app-border-tertiary.rounded-pill(
+              data-bs-toggle="dropdown"
+              aria-expanded="false"
+              role="button"
+          )
             div.d-flex.flex-column
-                span.app-text-seconadry.fw-bold #{user.userName}
-        ul.dropdown-menu.dropdown-menu-end.app-bg-tertiary.app-border-tertiary
-            li
-                button.text-center.dropdown-item.py-0(type="button")#logout-btn logout
+                span.app-text-seconadary #{user.userName}
+            ul.dropdown-menu.dropdown-menu-end.app-bg-tertiary.app-border-tertiary
+               li
+                button.text-center.dropdown-item.py-0(type="button")#logout-btn Logout
             
   //-==================Aside Container=============================
   div.container-fluid
@@ -96,28 +96,6 @@ block content
       
       main#main-content-user.pb-5
         block userContent
+
 block scripts 
-    script.
-      $("#logout-btn").on("click",async()=>{
-         try{
-         const isOk=confirm("Are sure Logout?")
-         if(isOk){
-           const res= await fetch("/logoutApi",{
-            method:"POST",
-            headers:{
-               "Context-Type":"application/json"
-            }
-           })
-           const res_data=await res.json()
-           console.log(res_data)
-           showToast(res_data.message)
-           if(res_data.success){
-            window.location.replace("/")
-           }
-         }
-         }
-         catch(error){
-            showToast(error.message)
-         }
-      })         
-       
+        

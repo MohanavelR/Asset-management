@@ -21,7 +21,7 @@ exports.categoryList = async (req, res) => {
     const start = parseInt(req.query.start) || 0;
     const length = parseInt(req.query.length) || 10;
     const search = (req.query.query || "").trim();
-
+    
     // search box
     const where = search
       ? {

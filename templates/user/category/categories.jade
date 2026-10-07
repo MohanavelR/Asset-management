@@ -2,7 +2,7 @@ extends ../../layout/userLayout
 include ../../components/formInput
 include ../../components/formSelect
 include ../../components/formTextarea
-
+include ../../components/searchBox
 
 block title
     title Categories | Asset Management
@@ -21,13 +21,13 @@ block userContent
 
         //- ======== Search Filter ==========
         .row.mb-3
-            .col-md-4
-                +formInput({
-                    id: 'searchInput',
-                    name: 'search',
-                    placeholder: 'Search category...',
-                    label:"Search"
-                })
+            .col-md-4 
+              +searchBox({
+                 id: 'searchInput',
+                 label: 'Search',
+                 name: 'search',
+                 placeholder: 'Name',
+              })
         hr        
 
         //- ========= Category Table ==========
@@ -65,7 +65,7 @@ block userContent
                                     id: 'categoryName',
                                     label: 'Category Name',
                                     name: 'name',
-                                    placeholder: 'e.g. Laptop, Mobile Phone, Drill Machine'
+                                    placeholder: 'e.g. Laptop'
                                 })(minlength='2', maxlength='100')
                                 span#name-error.text-danger.error-text
 
@@ -105,29 +105,26 @@ block scripts
         
         //- ========== Delete API==================
         async function deleteCategory(id) {
-           if(!id){
-               return
-           }
-           try{
-               const isOk = confirm("Are you sure you want to delete this category?\n\n" +"Deletion may fail if assets are linked to this category.");
-               if(isOk){
-                   const response = await fetch(`/asset-categoriesApi/${id}`, {
-                               method: "DELETE"
-                   })
-                   const res_data=await response.json()
-                   if(res_data.success){
-                       showToast(res_data.message,"success")
-                       $("#categoryTable").DataTable().ajax.reload(null, false);
-                   }
-                   else{
-                       showToast(res_data.message,"danger")
-                   }
-               } 
-           }
-           catch(error){
-                  showToast(error.message,"danger")
-   
-           }
-   
-        }                                      
+             if (!id) return;
+           
+             const isOk = confirm(
+               "Are you sure you want to delete this category?\n\n" +
+               "Deletion may fail if assets are linked to this category."
+             );
+             if (!isOk) return;
+           
+             try {
+               const response = await fetch(`/asset-categoriesApi/${id}`, { method: "DELETE" });
+               const res_data = await response.json();
+           
+               if (res_data.success) {
+                 showToast(res_data.message || "Deleted successfully", "success");
+                 $("#categoryTable").DataTable().ajax.reload(null, false);
+               } else {
+                 showApiError(res_data);
+               }
+             } catch (error) {
+               showToast(error.message, "danger");
+             }
+        }                                    
    

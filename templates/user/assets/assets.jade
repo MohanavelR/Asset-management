@@ -1,7 +1,8 @@
 extends ../../layout/userLayout
-include ../../components/formInput.jade
-include ../../components/formSelect.jade
-
+include ../../components/formInput
+include ../../components/formSelect
+include ../../components/branchSelect
+include ../../components/searchBox
 block title
   title Assets | Asset Management
 
@@ -26,17 +27,15 @@ block userContent
     .row.g-2.mb-3
       
       //-========== Search Filter===========
-      .col-lg-5.col-md-12
-        +formInput({
-          id: 'searchInput',
-          name: 'search',
-          label:"Search",
-          type: 'search',
-          placeholder: 'Search by tag, serial no, make, model, vendor or branch'
+      .col-lg-4.col-md-6
+        +searchBox({
+           id: 'searchInput',
+           label: 'Search',
+           placeholder: 'Search by tag, serial no, make, model...',
         })
 
       //-========== Category Filter===========
-      .col-lg-3.col-md-6
+      .col-lg-2.col-md-6
         +formSelect({
           id: 'categoryFilter',
           name: 'category',
@@ -44,9 +43,15 @@ block userContent
           options: categoryOptions,
           placeholder: 'All Categories'
         })
-
+        //-  ====== branch Filter===========
+      .col-lg-2.col-md-6
+         +branchSelect({
+             id: 'branchFilter',
+             label: 'Branch',
+             placeholder: 'All Branches'
+      })
       //-========== Status Filter===========
-      .col-lg-3.col-md-6
+      .col-lg-2.col-md-6
         +formSelect({
           id: 'statusFilter',
           name: 'status',
@@ -54,12 +59,16 @@ block userContent
           options: ['In Stock', 'Issued', 'Returned'],
           placeholder: 'All Status'
         })
-
+      
       //- ======Reset Filters===========
       .col-lg-1.col-md-12.d-flex.flex-column.gap-1
         span Reset
         button#resetFilters.btn.btn-light.border.w-100(type='button', title='Reset')
-          i.fa-solid.fa-rotate-left
+          i.fa-solid.fa-rotate-left  
+        
+
+      
+    
     hr
     //- ======== Asset Table ========
     .card.app-bg-secondary.app-border-primary
@@ -89,26 +98,27 @@ block scripts
    
     //- ==========Delete Api===================
     async function deleteAsset(id) {
-      if (!id) {
-        return
-      }
-      try {
-        const isOk = confirm("Are you sure you want to delete this asset?\n\n" + "Deletion is not allowed if the asset is issued or has history.")
-        if (isOk) {
-          const response = await fetch(`/deleteAssetApi/${id}`, {
-            method: "DELETE"
-          })
-          const res_data = await response.json()
-          if (res_data.success) {
-            showToast(res_data.message, "success")
-            $("#assetTable").DataTable().ajax.reload(null, false)
-          } else {
-            showToast(res_data.message, "danger")
-          }
-        }
-      } catch (error) {
-        showToast(error.message, "danger")
-      }
+         if (!id) return;
+       
+         const isOk = confirm(
+           "Are you sure you want to delete this asset?\n\n" +
+           "Deletion is not allowed if the asset is issued or has history."
+         );
+         if (!isOk) return;
+       
+         try {
+           const response = await fetch(`/deleteAssetApi/${id}`, { method: "DELETE" });
+           const res_data = await response.json();
+       
+           if (res_data.success) {
+             showToast(res_data.message || "Deleted successfully", "success");
+             $("#assetTable").DataTable().ajax.reload(null, false);
+           } else {
+             showApiError(res_data);
+           }
+         } catch (error) {
+           showToast(error.message, "danger");
+         }
     }
 
     //- =========Reset============== 
@@ -116,6 +126,7 @@ block scripts
      $("#searchInput").val("");
      $("#categoryFilter").val("");
      $("#statusFilter").val("");
+     $("#branchFilter").val("");
      table.ajax.reload();
     }
     $("#resetFilters").on("click", resetFilter);

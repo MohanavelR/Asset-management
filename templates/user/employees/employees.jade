@@ -1,7 +1,8 @@
 extends ../../layout/userLayout
-include ../../components/formInput.jade
-include ../../components/formSelect.jade
+include ../../components/formInput
+include ../../components/formSelect
 include ../../components/branchSelect
+include ../../components/searchBox
 
 block title 
     title  Employees | Asset Management 
@@ -21,14 +22,14 @@ block userContent
       .row.g-3.justify-content-between
        
         //-========Search Filter===========   
-        .col-md-4
-            +formInput({
-            id: 'searchInput',
-            label: 'Search',
-            name: 'search',
-            type: 'search',
-            placeholder: 'Name, email, phone...'
-            })
+        .col-lg-4.col-md-6
+          +searchBox({
+             id: 'searchInput',
+             label: 'Search',
+             name: 'search',
+             placeholder: 'Name, email, phone...',
+          })
+
          //-==========Branch Filter============     
         .col-md-3   
           +branchSelect({ 
@@ -46,6 +47,13 @@ block userContent
             selected: 'Active',
             placeholder: 'All'
             })
+        //- ======Reset Filters===========
+        .col-lg-1.col-md-12.d-flex.flex-column.gap-1
+          span Reset
+          button#resetFilters.btn.btn-light.border.w-100(type='button', title='Reset')
+            i.fa-solid.fa-rotate-left  
+        
+    
         
              
         hr
@@ -78,30 +86,31 @@ block userContent
 block scripts
   script(src="/js/employees.js")
   script.
+    
     //============ Delete API================
-     async function deleteEmployee(id) {
-        if(!id){
-            return
-        }
-        try{
-            const isOk=confirm("Are Sure to Delete?")
-            if(isOk){
-                const response = await fetch(`/deleteEmployeeApi/${id}`, {
-                            method: "DELETE"
-                })
-                const res_data=await response.json()
-                if(res_data.success){
-                    showToast(res_data.message,"success")
-                    $("#employeeTable").DataTable().ajax.reload(null, false);
-                }
-                else{
-                    showToast(res_data.message,"danger")
-                }
-            } 
-        }
-        catch(error){
-               showToast(error.message,"danger")
-        }
-
-      }                                      
+    async function deleteEmployee(id) {
+         if (!id) return;
+         if (!confirm("Are you sure you want to delete this employee?")) return;
+         try {
+           const response = await fetch(`/deleteEmployeeApi/${id}`, { method: "DELETE" });
+           const res_data = await response.json();
+       
+           if (res_data.success) {
+             showToast(res_data.message || "Deleted successfully", "success");
+             $("#employeeTable").DataTable().ajax.reload(null, false);
+           } else {
+             showApiError(res_data);
+           }
+         } catch (error) {
+           showToast(error.message, "danger");
+         }
+    }           
+    //- =========Reset============== 
+    function resetFilter() {
+       $("#searchInput").val("");
+       $("#statusFilter").val("");
+       $("#branchFilter").val("");
+       table.ajax.reload();
+    }
+    $("#resetFilters").on("click", resetFilter);                                      
                            

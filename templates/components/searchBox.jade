@@ -1,0 +1,17 @@
+mixin searchBox(opts = {})
+  - const { id = 'searchInput', name = 'search', label, placeholder = 'Search...', value = '', icon = 'fas fa-search', colClass = '' } = opts
+
+  div(class=colClass)
+    if label
+      label.form-label(for=id)= label
+    .input-group
+      span.input-group-text.app-bg-tertiary.app-border-tertiary
+        i(class=icon)
+      input.form-control(
+        id=id
+        name=name
+        type="search"
+        placeholder=placeholder
+        value=value
+        autocomplete="off"
+      )

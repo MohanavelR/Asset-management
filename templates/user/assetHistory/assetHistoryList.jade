@@ -2,6 +2,7 @@ extends ../../layout/userLayout
 include ../../components/branchSelect
 include ../../components/formInput
 include ../../components/formSelect
+include ../../components/searchBox
 
 block title
     title Asset History | Asset Management
@@ -22,12 +23,10 @@ block userContent
         .row.g-2.mb-2
             //-============ Search Filter ========
             .col-lg-4.col-md-12
-                +formInput({
-                    id: 'searchInput',
-                    label: 'Search',
-                    name: 'search',
-                    type: 'search',
-                    placeholder: 'Tag, serial, make, model, employee'
+                +searchBox({
+                   id: 'searchInput',
+                   label: 'Search',
+                   placeholder: 'Search by tag, serial no, make, model...',
                 })
         
             //-============ Category Filter ========
@@ -59,9 +58,9 @@ block userContent
                 })
         
       
-        .row.g-2.mb-3
+       
             //-============ From Date ========
-            .col-lg-3.col-md-6
+            .col-lg-2.col-md-6
                 +formInput({
                     id: 'fromDate',
                     label: 'From',
@@ -70,7 +69,7 @@ block userContent
                 })(title='From date', max=todayStr)
         
             //-============ To Date ========
-            .col-lg-3.col-md-6
+            .col-lg-2.col-md-6
                 +formInput({
                     id: 'toDate',
                     label: 'To',
@@ -78,11 +77,13 @@ block userContent
                     type: 'date'
                 })(title='To date', max=todayStr)
         
+            
             //- ======== Reset Filters ========
-            .col-lg-2.col-md-12.d-flex.flex-column.gap-1
+            .col-lg-1.col-md-12.d-flex.flex-column.gap-1
                 label.form-label.mb-0 Reset
                 button#resetFilters.btn.btn-light.border.w-100(type='button', title='Reset')
                     i.fa-solid.fa-rotate-left
+        
         hr    
         //- ======== History Table ========
         .card.app-bg-secondary.app-border-primary
