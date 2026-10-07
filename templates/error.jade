@@ -1,6 +1,17 @@
 extends layout/base
 
-block title 
-    title  Asset Management | Index 
-block content 
-   h1 error Page
+block title
+    title Error | Asset Management
+
+block content
+    .container
+        .row.justify-content-center.mt-5
+            .col-md-6.col-lg-5
+                .card.shadow-sm.text-center
+                    .card-body.p-5
+                        if error.statusCode
+                            h1.display-1.fw-bold.text-danger= error.statusCode
+                        else
+                            h1.display-4.fw-bold.text-danger Oops
+                        p.lead.text-muted.mb-4= error.message || 'Something went wrong'
+                        a.btn.btn-primary(href="/") Back to Home
