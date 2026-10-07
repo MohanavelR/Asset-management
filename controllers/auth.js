@@ -89,15 +89,15 @@ exports.forgotPassword = async function (req, res) {
 
         const otp = await user.setForgotOtp()
         await sendEmail({
-         to: user.email,
-         subject: "Your password reset OTP",
-         text: `Your OTP is ${otp}. It is valid for 10 minutes.`,
-         html: `<p>Your OTP is <b style="font-size:20px">${otp}</b>.</p>
-                <p>It is valid for 10 minutes. If you didn't request this, ignore this email.</p>`,
-         });
+           to: user.email,
+           subject: "Your password reset OTP",
+           text: `Your OTP is ${otp}. It is valid for 10 minutes.`,
+           html: `<p>Your OTP is <b style="font-size:20px">${otp}</b>.</p>
+                  <p>It is valid for 10 minutes. If you didn't request this, ignore this email.</p>`,
+           });
 
         return res.status(200).json({
-            message: "otp sent",
+            message: "OTP sent.Check your email",
             success: true,
             otp
         })

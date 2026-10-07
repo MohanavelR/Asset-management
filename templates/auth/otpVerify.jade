@@ -10,7 +10,9 @@ block content
        div.col-md-5.col-12
         div.rounded.px-5.py-3.app-border-secondary.app-bg-secondary
           h2.mt-2.text-center.app-text-primary OTP Verification
+          p.app-text-tertiary.small.text-center Please check your email for the verification code.
           form#otp-form.login-form.mb-3
+            
             //-===================OTP field==================
             div.form-group.required-field
                input.form-control(type="text",name="otp",id="otp",placeholder="Enter OTP")
@@ -65,7 +67,7 @@ block scripts
             if(res_data?.success){
               setTimeout(()=>{
              window.location.replace("/set-password")
-              },300)
+              },1000)
             }
            }
            catch(error){

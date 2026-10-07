@@ -205,29 +205,44 @@ padding-left:250px ;
 }
 
 /*================Aside Container====================*/
-#sidebarMenu {
-    height: 100vh;
-    overflow: auto;
+
+@media (min-width: 768px) {
+  #sidebarMenu {
+    position: sticky;
+    top: 58px;
+    height: calc(100vh - 58px);
+    overflow-y: auto;
+  }
 }
-.offcanvas-body .nav .menu-item{
+
+@media (max-width: 767.98px) {
+  #sidebarMenu {
+    height: 100vh;
+  }
+}
+
+.offcanvas-body .nav .menu-item {
   border-radius: 5px;
   color: var(--app-text-secondary);
+  
 }  
-.offcanvas-body .nav .menu-item:hover{
-  background-color:var(--app-bg-tertiary);
+
+.offcanvas-body .nav .menu-item:hover {
+  background-color: var(--app-bg-tertiary);
   border-radius: 5px;
 }  
-.offcanvas-body .nav .menu-item a{
-    color: var(--app-text-primary);
-    display: flex;
+
+.offcanvas-body .nav .menu-item a {
+  color: var(--app-text-primary);
+  display: flex;
+  align-items: center;
+  padding: 0.5rem 0.75rem;
 }
-.offcanvas-body .nav .menu-item a.active{
+
+.offcanvas-body .nav .menu-item a.active {
   color: rgb(79, 32, 154);
   border-radius: 5px;
   background-color: rgb(199, 228, 228);
-}
-.offcanvas-body .nav .menu-item a i{
-    margin-top: 3px;
 }
 
 .sidebar-alt .menu-toggle {
@@ -243,6 +258,7 @@ padding-left:250px ;
   text-decoration: none;
   cursor: pointer;
 }
+
 .sidebar-alt .menu-toggle:hover {
   color: #4338ca;
 }
@@ -251,9 +267,11 @@ padding-left:250px ;
   font-size: 0.65rem;
   transition: transform 0.25s ease;
 }
+
 .sidebar-alt .menu-toggle.collapsed .chevron {
   transform: rotate(-90deg);
 }
+
 
 
 /*=================Login==================*/
@@ -324,3 +342,4 @@ padding-left:250px ;
  padding: 1.5rem !important;
 } 
 } 
+

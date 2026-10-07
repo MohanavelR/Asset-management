@@ -2,35 +2,45 @@ extends ./base
 
 block content
   //-================NavBar=================== 
-  nav.navbar.app-bg-secondary.position-sticky.top-0.z-3.border-bottom.px-3
+  nav.navbar.app-bg-secondary.sticky-top.z-3.border-bottom.px-3
     div.container-fluid
       div.d-flex.align-items-center.justify-content-between.gap-2.w-100
-        div 
-          button.btn.app-text-primary.d-md-none(type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebarMenu" aria-controls="sidebarMenu" aria-label="Toggle menu") ☰
-          a.navbar-brand.d-none.d-md-block.app-text-primary.fw-bold.fs-2(href="/") #{appName}
+        div.d-flex.align-items-center.gap-2
+          button.btn.app-text-primary.d-md-none.p-0.border-0.fs-4(
+            type="button" 
+            data-bs-toggle="offcanvas" 
+            data-bs-target="#sidebarMenu" 
+            aria-controls="sidebarMenu" 
+            aria-label="Toggle menu"
+          ) ☰
+          a.navbar-brand.d-none.d-md-block.app-text-primary.fw-bold.fs-2.mb-0(href="/") #{appName}
+        
         div.dropdown
           div.d-flex.gap-2.align-items-center.dropdown-toggle.app-bg-tertiary.px-3.py-1.app-border-tertiary.rounded-pill(
-              data-bs-toggle="dropdown"
-              aria-expanded="false"
-              role="button"
+            data-bs-toggle="dropdown"
+            aria-expanded="false"
+            role="button"
           )
-            div.d-flex.flex-column
-                span.app-text-seconadary #{user.userName}
-            ul.dropdown-menu.dropdown-menu-end.app-bg-tertiary.app-border-tertiary
-               li
-                button.text-center.dropdown-item.py-0(type="button")#logout-btn Logout
-            
+            span.app-text-secondary #{user.userName}
+          ul.dropdown-menu.dropdown-menu-end.app-bg-tertiary.app-border-tertiary
+            li
+              button#logout-btn.dropdown-item.text-center.py-1(type="button") Logout
+
   //-==================Aside Container=============================
   div.container-fluid
     div.row
-      aside#sidebarMenu.user-aside.position-fixed.offcanvas-md.offcanvas-start.col-8.col-sm-5.col-md-3.col-lg-2.app-bg-secondary.border-end.min-vh-md-100(tabindex="-1" aria-labelledby="sidebarLabel")
-        div.offcanvas-header.border-bottom
+      aside#sidebarMenu.offcanvas-md.offcanvas-start.col-md-3.col-lg-2.app-bg-secondary.border-end(
+        tabindex="-1" 
+        aria-labelledby="sidebarLabel"
+      )
+        div.offcanvas-header.border-bottom.d-md-none
           h5#sidebarLabel.offcanvas-title #{appName}
           button.btn-close(type="button" data-bs-dismiss="offcanvas" data-bs-target="#sidebarMenu" aria-label="Close")
-        div.offcanvas-body.d-block.pt-4
-          ul.nav.flex-column.text-black.sidebar-alt
-            li.nav-item.menu-item
-              a.nav-link(href="/dashboard", class=activePage === "dashboard" ? "active" : "")
+        
+        div.offcanvas-body.d-flex.flex-column.pt-4.px-0
+          ul.nav.flex-column.w-100.sidebar-alt
+            li.nav-item.menu-item.px-2.text-nowrap
+              a.nav-link.text-nowrap(href="/dashboard", class=activePage === "dashboard" ? "active" : "")
                 i.fas.fa-chart-line.me-2
                 | Dashboard
         
@@ -43,15 +53,15 @@ block content
             li
               div#mastersMenu.collapse.show
                 ul.nav.flex-column
-                  li.nav-item.menu-item
+                  li.nav-item.menu-item.px-3
                     a.nav-link(href="/employees", class=activePage === "employees" ? "active" : "")
                       i.fas.fa-users.me-2
                       | Employee Master
-                  li.nav-item.menu-item
+                  li.nav-item.menu-item.px-3
                     a.nav-link(href="/asset-categories", class=activePage === "assetCategories" ? "active" : "")
                       i.fas.fa-list.me-2
                       | Asset Category
-                  li.nav-item.menu-item
+                  li.nav-item.menu-item.px-3
                     a.nav-link(href="/assets", class=activePage === "assets" ? "active" : "")
                       i.fas.fa-box.me-2
                       | Asset Master
@@ -68,19 +78,19 @@ block content
             li
               div#operationsMenu.collapse.show
                 ul.nav.flex-column
-                  li.nav-item.menu-item
+                  li.nav-item.menu-item.px-3
                     a.nav-link(href="/stocks", class=activePage === "stock" ? "active" : "")
                       i.fas.fa-warehouse.me-2
                       | Stock View
-                  li.nav-item.menu-item
+                  li.nav-item.menu-item.px-3
                     a.nav-link(href="/issueAssets", class=activePage === "issue" ? "active" : "")
                       i.fas.fa-arrow-right.me-2
                       | Issue Asset
-                  li.nav-item.menu-item
+                  li.nav-item.menu-item.px-3
                     a.nav-link(href="/returnAssets", class=activePage === "return" ? "active" : "")
                       i.fas.fa-arrow-left.me-2
                       | Return Asset
-                  li.nav-item.menu-item
+                  li.nav-item.menu-item.px-3
                     a.nav-link(href="/scrapAssets", class=activePage === "scrap" ? "active" : "")
                       i.fas.fa-trash.me-2
                       | Scrap Asset
@@ -88,14 +98,10 @@ block content
             li
               hr.my-2
         
-            li.nav-item.menu-item
+            li.nav-item.menu-item.px-3
               a.nav-link(href="/assetHistory", class=activePage === "history" ? "active" : "")
                 i.fas.fa-history.me-2
                 | Asset History
-      
-      
-      main#main-content-user.pb-5
-        block userContent
 
-block scripts 
-        
+      main#main-content-user.col-12.col-md-9.col-lg-10.py-4.px-md-4
+        block userContent
