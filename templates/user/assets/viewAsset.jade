@@ -9,7 +9,7 @@ block userContent
     - const money = function (v) { return (v === undefined || v === null || v === '') ? '' : Number(v).toLocaleString('en-IN', { minimumFractionDigits: 2 }) }
     - const dt = function (v) { return v ? new Date(v).toLocaleDateString('en-IN') : '' }
     - const actionColors = { 'Issued': 'primary', 'Returned': 'success', 'Scrapped': 'danger' }
-    div.pt-3
+    div
         .d-flex.justify-content-between.align-items-center
             .d-flex.align-items-center
                 a.app-text-primary.me-3.fs-3(href='/assets', title='Back')

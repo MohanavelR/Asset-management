@@ -9,7 +9,7 @@ block userContent
   - const a = asset || {}
   - const categoryOptions = (categories || []).map(function (c) { return { value: c.id, label: c.name } })
   - const today = new Date().toISOString().slice(0, 10)
-  .d-flex.align-items-center.mb-4.mt-4
+  .d-flex.align-items-center.mb-4
     a.app-text-primary.me-3.fs-3(href='/assets', title='Back')
       i.fas.fa-arrow-left
     h3.app-text-primary.mb-0= asset ? 'Update Asset' : 'Add Asset'

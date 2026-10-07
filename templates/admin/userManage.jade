@@ -1,0 +1,117 @@
+extends ../layout/userLayout.jade
+include ../components/branchSelect
+include ../components/formSelect
+include ../components/searchBox
+
+block title
+  title User Management | Asset Management
+
+block userContent
+  - const userStatusOptions = [{ value: 'Active', label: 'Active' }, { value: 'Inactive', label: 'Inactive' }, { value: 'NotCreated', label: 'Not Created' }]
+
+  div
+     //-============ Header ==============
+     .d-flex.flex-column.flex-sm-row.justify-content-sm-between.align-items-start.align-items-sm-center.mb-4
+       div
+         h2.fw-bold.mb-1.app-text-primary User Management
+         p.app-text-tertiary.small.mb-0 Create user accounts for employees and manage their login status
+     hr
+
+     .row.g-2.mb-3
+       //-============ Search Filter ========
+       .col-lg-5.col-md-12
+         +searchBox({
+           id: 'searchInput',
+           label: 'Search',
+           placeholder: 'Search by employee id, name, email, phone...',
+         })
+
+       //-============ Branch Filter ========
+       .col-lg-3.col-md-6
+         +branchSelect({
+           id: 'branchFilter',
+           label: 'Branch',
+           placeholder: 'All Branches'
+         })
+
+       //-============ User Status Filter ========
+       .col-lg-3.col-md-6
+         +formSelect({
+           id: 'userStatusFilter',
+           label: 'User Status',
+           name: 'userStatusFilter',
+           options: userStatusOptions,
+           placeholder: 'All Status'
+         })
+
+       //- ======== Reset Filters ========
+       .col-lg-1.col-md-12.d-flex.flex-column.gap-1
+         label.form-label.mb-0 Reset
+         button#resetFilters.btn.btn-light.border.w-100(type='button', title='Reset')
+           i.fa-solid.fa-rotate-left
+     hr
+
+     //- ======== User Table ========
+     .card.app-bg-secondary.app-border-primary
+       .card-body
+         .table-responsive
+           table#userTable.table.table-hover.align-middle.app-table.w-100
+             thead
+               tr
+                 th Emp ID
+                 th Name
+                 th Department
+                 th Branch
+                 th Role
+                 th.text-center User Status
+             tbody#userTableBody
+               //- Error
+               tr#userError.d-none
+                 td.text-center.py-4(colspan='6')
+                   i.fa-solid.fa-triangle-exclamation.fa-2x.text-danger
+                   p.mt-2.mb-0.text-danger Unable to load employees.
+
+  //- ======== Create User Modal ========
+  #userModal.modal.fade(tabindex='-1', aria-hidden='true')
+    .modal-dialog
+      .modal-content
+        form#userForm(novalidate)
+          .modal-header
+            h5.modal-title Create User
+            button.btn-close(type='button', data-bs-dismiss='modal')
+          .modal-body
+            input(type='hidden', name='employeeId')
+
+            .mb-3
+              label.form-label Employee
+              p#userModalEmployee.fw-semibold.mb-0
+
+            .mb-2.form-group.required-field
+              label.form-label(for='userName') Username
+              input#userName.form-control(type='text', name='userName', placeholder='username')
+              span.text-danger.error-text#userName-error
+
+            .mb-2.form-group.required-field
+              label.form-label(for='password') Password
+              input#password.form-control(type='password', name='password', placeholder='password')
+              span.text-danger.error-text#password-error
+
+            .mb-2.form-group.required-field
+              label.form-label(for='role') Role
+              select#role.form-select(name='role')
+                option(value='') Select role
+                option(value='ADMIN') Admin
+                option(value='MANAGER') Manager
+                option(value='EMPLOYEE') Employee
+              span.text-danger.error-text#role-error
+          .modal-footer
+            button.btn.btn-light.border(type='button', data-bs-dismiss='modal') Cancel
+            button#user-save-btn.btn.btn-primary(type='submit') Create
+
+block scripts
+  script(src='/js/user.js')
+  script.
+    $("#resetFilters").on("click", function () {
+      $("#searchInput, #branchFilter, #userStatusFilter").val("");
+      table.ajax.reload();
+    });

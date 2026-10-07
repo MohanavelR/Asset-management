@@ -12,6 +12,16 @@ const User = sequelize.define(
       primaryKey: true,
       autoIncrement: true,
     },
+    c_by: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      references: {
+          model: "users",
+          key: "id"
+      },
+      onUpdate: "CASCADE",
+      onDelete: "RESTRICT"
+    },
 
     // ========= Required Fields ===========
     userName: {
@@ -40,10 +50,10 @@ const User = sequelize.define(
 
     
     role: {
-      type: DataTypes.ENUM("ADMIN", "USER"),
-      defaultValue: "USER",
-      allowNull: false,
-    },
+        type: DataTypes.ENUM("ADMIN", "EMPLOYEE", "MANAGER"),
+        defaultValue: "EMPLOYEE",
+        allowNull: false,
+      },
 
     // ========= Optional Fields ===========
     loginAt: {

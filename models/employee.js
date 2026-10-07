@@ -20,7 +20,6 @@ const Employee = sequelize.define(
                 notEmpty: true
             }
         },
-
         name: {
             type: DataTypes.STRING,
             allowNull: false,
@@ -85,7 +84,18 @@ const Employee = sequelize.define(
         status: {
             type: DataTypes.ENUM("Active", "Inactive"),
             defaultValue: "Active"
-        }
+        },
+        userId: {
+            type: DataTypes.INTEGER,
+            allowNull: true,          
+            unique: true,           
+            references: {
+                model: "users",
+                key: "id"
+            },
+            onUpdate: "CASCADE",
+            onDelete: "SET NULL"     
+       },
     },
     {
         tableName: "employees",

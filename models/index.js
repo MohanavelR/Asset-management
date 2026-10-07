@@ -44,6 +44,9 @@ Employee.hasMany(AssetHistory, { foreignKey: "employeeId", as: "history", onDele
 // ========= User <-> AssetHistory (who performed the action) ===========
 AssetHistory.belongsTo(User, { foreignKey: "performedBy", as: "performer" });
 User.hasMany(AssetHistory, { foreignKey: "performedBy", as: "performedHistory", onDelete: "SET NULL" });
+// ========= User <-> Employee (employee's own login account) ===========
+Employee.belongsTo(User, { foreignKey: "userId", as: "user" });
+User.hasOne(Employee, { foreignKey: "userId", as: "employee" });
 
 module.exports = {
   sequelize,

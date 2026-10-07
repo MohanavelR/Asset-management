@@ -1,7 +1,8 @@
-const {Employee} =require("../models/index")
+const {Employee,User} =require("../models/index")
 const logger = require("../helpers/logger");
 const { Op } = require("sequelize");
 const generateId = require("../helpers/generateId");
+const { sequelize } = require("../config/db");
 
 // ========= Employee Table API ===========
 exports.employeeList = async (req, res) => {
@@ -183,15 +184,28 @@ exports.updateEmployee = async function (req, res, next) {
       });
     }
 
-    await employee.update({
-      employeeId: req.body.employeeId,
-      name: req.body.name,
-      email: req.body.email,
-      phone: req.body.phone,
-      department: req.body.department,
-      designation: req.body.designation,
-      branch: req.body.branch,
-      status: req.body.status,
+    await sequelize.transaction(async (t) => {
+      await employee.update(
+        {
+          employeeId: req.body.employeeId,
+          name: req.body.name,
+          email: req.body.email,
+          phone: req.body.phone,
+          department: req.body.department,
+          designation: req.body.designation,
+          branch: req.body.branch,
+          status: req.body.status,
+        },
+        { transaction: t }
+      );
+
+      // if the employee has a user account, keep its status in sync
+      if (employee.userId) {
+        await User.update(
+          { isActive: employee.status === "Active" },
+          { where: { id: employee.userId }, transaction: t }
+        );
+      }
     });
 
     return res.status(200).json({

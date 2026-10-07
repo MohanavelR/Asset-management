@@ -12,7 +12,7 @@ block userContent
     - const categoryOptions = (categories || []).map(function (c) { return { value: c.id, label: c.name } })
     - const issuedOptions = (issues || []).map(function (i) { return { value: String(i.asset.id), label: i.asset.assetTag + ' - ' + i.asset.make + ' ' + i.asset.model + ' (' + i.employee.name + ')' } })
 
-    div.pt-3
+    div
         //- ========== Header =============
         .d-flex.flex-column.flex-sm-row.justify-content-sm-between.align-items-start.align-items-sm-center.mb-4
             div

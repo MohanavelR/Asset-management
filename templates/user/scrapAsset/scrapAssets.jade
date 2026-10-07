@@ -13,7 +13,7 @@ block userContent
     - const categoryOptions = (categories || []).map(function (c) { return { value: c.id, label: c.name } })
     - const assetOptions = (assets || []).map(function (a) { return { value: String(a.id), status: a.status, label: a.assetTag + ' - ' + a.make + ' ' + a.model + ' (' + a.branch + ') - ' + a.status } })
 
-    div.pt-3
+    div
         //- ================== Header ================= 
         .d-flex.flex-column.flex-sm-row.justify-content-sm-between.align-items-start.align-items-sm-center.mb-4
             div

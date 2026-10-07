@@ -14,7 +14,7 @@ block userContent
     - const assetOptions = (assets || []).map(function (a) { return { value: String(a.id), label: a.assetTag + ' - ' + a.make + ' ' + a.model + ' (' + a.branch + ')' } })
     - const employeeOptions = (employees || []).map(function (e) { return { value: String(e.id), label: e.employeeId + ' - ' + e.name + ' (' + e.department + ')' } })
 
-    div.pt-3
+    div
         //- ========== Header =============
         .d-flex.flex-column.flex-sm-row.justify-content-sm-between.align-items-start.align-items-sm-center.mb-4
             div

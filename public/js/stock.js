@@ -8,7 +8,7 @@ const table = $("#stockTable").DataTable({
   dom: "lrtip",
   pageLength: 10,
   lengthMenu: [10, 25, 50, 100],
-  language: dataTableMessages( "Stack Assets", "fas fa-box" ),
+  language: dataTableMessages( "Stock Assets", "fas fa-box" ),
   ajax: {
     url: "/stockApi",
     data: function (d) {
