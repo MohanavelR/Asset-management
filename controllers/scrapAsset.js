@@ -50,7 +50,7 @@ exports.scrapListApi = async function (req, res, next) {
     }
 
     if (branch) {
-      where["$asset.branch$"] = branch;
+      where.branch = branch
     }
 
     if (typeof query === "string" && query.trim()) {

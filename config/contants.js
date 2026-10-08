@@ -2,6 +2,7 @@ const BRANCHES=[
     "Chennai", 
     "Salem", 
     "Coimbatore", 
+    "Sankari",
     "Madurai", 
     "Trichy"
 ]

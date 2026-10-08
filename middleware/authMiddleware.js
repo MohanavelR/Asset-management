@@ -18,7 +18,7 @@ async function authMiddleWare(req,res,next) {
             req.isAuthenticated=true
          }
          else{
-           req.clearCookie("token")
+           res.clearCookie("token")
          }
        }
 

@@ -3,7 +3,7 @@ const dayjs = require("dayjs");
 const logger = require("../helpers/logger");
 const { SCRAP_REASONS, RETURN_REASONS } = require("../config/contants");
 
-const STATUSES = ["In Stock", "Issued", "Repair", "Scrapped"];
+const STATUSES = ["In Stock", "Issued", "Returned", "Scrapped"];
 const OPTIONAL_DATES = [
   "issuedDate",
   "returnDate",
