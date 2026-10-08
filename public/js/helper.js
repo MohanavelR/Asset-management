@@ -27,9 +27,10 @@ function dataTableMessages(item = "records", icon = "fa-solid fa-folder-open") {
 
 // ================== Status Render=================
 function getStatusColor(status) {
+    
     const colors = {
         Active: "app-bg-success",
-        Inactive: "app-bg-secondary"
+        Inactive: "bg-secondary"
     };
     return colors[status] || "app-bg-secondary";
 }

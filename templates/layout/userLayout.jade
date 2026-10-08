@@ -13,7 +13,8 @@ block content
             data-bs-target="#sidebarMenu" 
             aria-controls="sidebarMenu" 
             aria-label="Toggle menu"
-          ) ☰
+          ) 
+            i(class="fas fa-bars")
           a.navbar-brand.d-none.d-md-block.app-text-primary.fw-bold.fs-2.mb-0(href="/") #{appName}
         
         div.dropdown
@@ -24,13 +25,19 @@ block content
           )
             span.app-text-secondary #{user.userName}
           ul.dropdown-menu.dropdown-menu-end.app-bg-tertiary.app-border-tertiary
-            
+            li.border-bottom.app-border-tertiary.px-2.d-flex.gap-3.pb-2
+              div.col-2.dropdown-avatar.d-flex.app-bg-secondary.app-text-secondary.fw-bold.justify-content-center.align-items-center  #{user.userName.charAt(0).toUpperCase()}
+              div 
+                 span.small.app-text-tertiary  #{user.email}
+                 span.app-text-success  #{user.role}
+             
+            li
             if user && user.role === "ADMIN"
-              li
+              li.border-bottom.app-border-tertiary 
                 a.dropdown-item.py-1(href="/user-management")
                   i.fas.fa-users.me-2
                   | User Management
-            li
+            li.border-bottom.app-border-tertiary 
               button.dropdown-item.py-1(type="button", data-bs-toggle="modal", data-bs-target="#changePasswordModal")
                 i.fas.fa-key.me-2
                 | Change Password

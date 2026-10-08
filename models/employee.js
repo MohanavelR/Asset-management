@@ -23,6 +23,7 @@ const Employee = sequelize.define(
         name: {
             type: DataTypes.STRING,
             allowNull: false,
+            
             validate: {
                 notEmpty: true
             }
@@ -31,6 +32,7 @@ const Employee = sequelize.define(
         email: {
             type: DataTypes.STRING,
             allowNull: false,
+            unique: true,
             validate: {
                 isEmail: true
             }

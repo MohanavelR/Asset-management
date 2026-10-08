@@ -62,9 +62,9 @@
 .app-text-tertiary    { color: var(--app-text-tertiary)    !important; }
 
 /* ============ Border Utilities ============ */
-.app-border-primary   { border: 1px solid var(--app-border-primary)   !important; }
-.app-border-secondary { border: 1px solid var(--app-border-secondary) !important; }
-.app-border-tertiary    { border: 1px solid var(--app-border-tertiary)    !important; }
+.app-border-primary   { border-color: var(--app-border-primary)   !important; }
+.app-border-secondary { border-color:  var(--app-border-secondary) !important; }
+.app-border-tertiary    { border-color:  var(--app-border-tertiary)    !important; }
 
 /* ============ Hover Utilities ============ */
 .app-hover-bg-primary:hover   { background-color: var(--app-hover-primary-bg)   !important; }
@@ -121,6 +121,11 @@
 
 #main-content-user  {
 padding-left:250px ;
+}
+.dropdown-avatar{
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
 }
 
                /* --Form-- */

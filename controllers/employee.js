@@ -199,13 +199,20 @@ exports.updateEmployee = async function (req, res, next) {
         { transaction: t }
       );
 
-      // if the employee has a user account, keep its status in sync
-      if (employee.userId) {
+      
         await User.update(
-          { isActive: employee.status === "Active" },
+          { email:req.body.email },
+          { where: { id: employee.userId }, transaction: t }
+        );
+      
+      
+      if (employee.userId && employee.status === "Inactive") {
+        await User.update(
+          { isActive: false },
           { where: { id: employee.userId }, transaction: t }
         );
       }
+    
     });
 
     return res.status(200).json({

@@ -47,7 +47,7 @@ const table = $("#userTable").DataTable({
         return (
           '<button type="button" class="btn btn-sm btn-primary user-set-btn" data-id="' +
           r.id + '" data-name="' + esc(r.employeeId + " - " + r.name) + '">' +
-          '<i class="fas fa-user-plus me-1"></i>Set</button>'
+          '<i class="fas fa-user-plus me-1"></i></button>'
         );
       }
     }
